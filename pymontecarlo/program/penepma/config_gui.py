@@ -18,108 +18,99 @@ __license__ = "GPL v3"
 
 # Standard library modules.
 import os
-import platform
 
 # Third party modules.
-import wx
+from PySide.QtGui import QSpinBox, QSizePolicy
 
 # Local modules.
-from pymontecarlo.program.config_gui import GUI, ConfigurePanel
+from pymontecarlo.program.config_gui import GUI, _ConfigurePanelWidget
 from pymontecarlo.program.penepma.config import program
 
-from wxtools2.browse import FileBrowseCtrl, DirBrowseCtrl, EVT_BROWSE
-from wxtools2.dialog import show_error_dialog
-from wxtools2.floatspin import FloatSpin
+from pymontecarlo.ui.gui.util.widget import FileBrowseWidget, DirBrowseWidget
 
 # Globals and constants variables.
 
-class _PenepmaConfigurePanel(ConfigurePanel):
+class _PenepmaConfigurePanelWidget(_ConfigurePanelWidget):
 
-    def _create_controls(self, sizer, settings):
-        # Controls
-        lbl_pendbase = wx.StaticText(self, label='Path to pendbase directory')
-        self._brw_pendbase = DirBrowseCtrl(self)
+    def _initUI(self, settings):
+        # Widgets
+        self._brw_pendbase = DirBrowseWidget()
 
-        lbl_exe = wx.StaticText(self, label='Path to PENEPMA executable')
-
-        if platform.system() == 'Windows':
-            filetypes = [('Application files', 'exe')]
+        self._brw_exe = FileBrowseWidget()
+        if os.name == 'nt':
+            self._brw_exe.setNameFilter('Application files (*.exe)')
         else:
-            filetypes = [('Application files', '*')]
-        self._brw_exe = FileBrowseCtrl(self, filetypes=filetypes)
+            self._brw_exe.setNameFilter('Application files (*)')
 
-        lbl_dumpp = wx.StaticText(self, label='Interval between dump (s)')
+        self._spn_dumpp = QSpinBox()
+        self._spn_dumpp.setMinimum(30)
+        self._spn_dumpp.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self._fs_dumpp = FloatSpin(self, min_val=30)
+        # Layouts
+        layout = _ConfigurePanelWidget._initUI(self, settings)
+        layout.addRow("Path to pendbase directory", self._brw_pendbase)
+        layout.addRow('Path to PENEPMA executable', self._brw_exe)
+        layout.addRow('Interval between dump (s)', self._spn_dumpp)
 
-        # Sizer
-        sizer.Add(lbl_pendbase, 0)
-        sizer.Add(self._brw_pendbase, 0, wx.GROW)
-        sizer.Add(lbl_exe, 0, wx.TOP, 10)
-        sizer.Add(self._brw_exe, 0, wx.GROW)
-        sizer.Add(lbl_dumpp, 0, wx.TOP, 10)
-        sizer.Add(self._fs_dumpp, 0, wx.GROW)
-
-        # Bind
-        self.Bind(EVT_BROWSE, self.OnBrowse, self._brw_pendbase)
-        self.Bind(EVT_BROWSE, self.OnBrowse, self._brw_exe)
+        # Signals
+        self._brw_pendbase.pathChanged.connect(self._onPathChanged)
+        self._brw_exe.pathChanged.connect(self._onPathChanged)
 
         # Values
         if 'penepma' in settings:
             path = getattr(settings.penepma, 'pendbase', None)
             try:
-                self._brw_pendbase.SetPath(path)
+                self._brw_pendbase.setPath(path)
             except ValueError:
                 pass
 
             path = getattr(settings.penepma, 'exe', None)
             try:
-                self._brw_exe.SetPath(path)
+                self._brw_exe.setPath(path)
             except ValueError:
                 pass
 
             try:
                 dumpp = int(getattr(settings.penepma, 'dumpp', 30))
-                self._fs_dumpp.SetValue(dumpp)
+                self._spn_dumpp.setValue(dumpp)
             except (TypeError, ValueError):
                 pass
 
-    def OnBrowse(self, event):
-        self._brw_pendbase.SetBaseDir(event.path)
-        self._brw_exe.SetBaseDir(event.path)
+        return layout
 
-    def Validate(self):
-        if not ConfigurePanel.Validate(self):
-            return False
+    def _onPathChanged(self, path):
+        if not path:
+            return
+        if not self._brw_pendbase.baseDir():
+            self._brw_pendbase.setBaseDir(path)
+        if not self._brw_exe.baseDir():
+            self._brw_exe.setBaseDir(path)
 
-        if not self._brw_pendbase.GetPath():
-            show_error_dialog(self, 'Please specify a pendbase directory')
+    def hasAcceptableInput(self):
+        if not self._brw_pendbase.path():
             return False
-
-        if not self._brw_exe.GetPath():
-            show_error_dialog(self, 'Please specify the PENEPMA executable')
+        if not self._brw_exe.path():
             return False
-        if not os.access(self._brw_exe.GetPath(), os.X_OK):
-            show_error_dialog(self, 'Specified file is not executable')
+        if not os.access(self._brw_exe.path(), os.X_OK):
             return False
-
         return True
 
-    def save(self, settings):
-        section = settings.add_section('penepma')
-        section.pendbase = self._brw_pendbase.GetPath()
-        section.exe = self._brw_exe.GetPath()
-        section.dumpp = int(self._fs_dumpp.GetValue())
+    def updateSettings(self, settings):
+        section = _ConfigurePanelWidget.updateSettings(self, settings)
+        section.pendbase = self._brw_pendbase.path()
+        section.exe = self._brw_exe.path()
+        section.dumpp = int(self._spn_dumpp.value())
+        return section
 
 class _PenepmaGUI(GUI):
 
-    def create_configure_panel(self, parent, settings):
+    def create_configure_panel(self, parent=None):
         """
         Returns the configure panel for this program.
-        
+
         :arg parent: parent window
         :arg settings: settings object
         """
-        return _PenepmaConfigurePanel(parent, program, settings)
+        return _PenepmaConfigurePanelWidget(program, parent)
 
 gui = _PenepmaGUI()
