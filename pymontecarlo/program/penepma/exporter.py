@@ -47,7 +47,7 @@ from pymontecarlo.program._penelope.exporter import \
     Exporter as _Exporter, Keyword, Comment, ExporterException, ExporterWarning
 from pymontecarlo.program.penepma.options.detector import index_delimited_detectors
 
-from penelopelib.material import MaterialInfo
+from pypenelopelib.material import MaterialInfo
 
 # Globals and constants variables.
 MAX_PHOTON_DETECTORS = 25 # Set in penepma.f

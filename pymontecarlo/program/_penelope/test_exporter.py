@@ -31,7 +31,7 @@ from pymontecarlo.options.limit import TimeLimit
 from pymontecarlo.program._penelope.options.material import Material
 from pymontecarlo.program._penelope.converter import Converter
 from pymontecarlo.program._penelope.exporter import Exporter
-import penelopelib.pengeom as pengeom
+import pypenelopelib.pengeom as pengeom
 
 # Globals and constants variables.
 

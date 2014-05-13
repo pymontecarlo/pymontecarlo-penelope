@@ -37,7 +37,7 @@ from pymontecarlo.program._penelope.options.geometry import \
 from pymontecarlo.program.exporter import \
     Exporter as _Exporter, ExporterException, ExporterWarning #@UnusedImport
 
-import penelopelib.material as penmaterial
+import pypenelopelib.material as penmaterial
 
 # Globals and constants variables.
 from pymontecarlo.options.particle import ELECTRON, PHOTON, POSITRON

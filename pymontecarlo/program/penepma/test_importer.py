@@ -58,12 +58,12 @@ class TestImporter(TestCase):
             PhotonIntensityDetector((radians(-45), radians(-35)), (0, radians(360.0)))
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(2, len(results))
+        self.assertEqual(2, len(resultscontainer))
 
-        result = results['xray2']
+        result = resultscontainer['xray2']
 
         val, unc = result.intensity('W Ma1')
         self.assertAlmostEqual(6.07152e-05, val, 9)
@@ -90,12 +90,12 @@ class TestImporter(TestCase):
                                    1000, (0, 20e3))
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['spectrum']
+        result = resultscontainer['spectrum']
 
         total = result.get_total()
         self.assertEqual(1000, len(total))
@@ -119,12 +119,12 @@ class TestImporter(TestCase):
             PhotonDepthDetector((radians(35), radians(45)), (0, radians(360.0)), 500)
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['prz']
+        result = resultscontainer['prz']
 
         self.assertTrue(result.exists('Al Ka1'))
         self.assertTrue(result.exists('Fe Ka1'))
@@ -160,12 +160,12 @@ class TestImporter(TestCase):
         ops.detectors['fraction'] = ElectronFractionDetector()
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['fraction']
+        result = resultscontainer['fraction']
 
         self.assertAlmostEqual(0.2336, result.backscattered[0], 4)
         self.assertAlmostEqual(0.6713e-2, result.backscattered[1], 6)
@@ -183,12 +183,12 @@ class TestImporter(TestCase):
         ops.detectors['time'] = TimeDetector()
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['time']
+        result = resultscontainer['time']
 
         self.assertAlmostEqual(0.3495e3, result.simulation_time_s, 4)
         self.assertAlmostEqual(1.0 / 0.1508e3, result.simulation_speed_s[0], 4)
@@ -200,12 +200,12 @@ class TestImporter(TestCase):
         ops.detectors['showers'] = ShowersStatisticsDetector()
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['showers']
+        result = resultscontainer['showers']
 
         self.assertEqual(52730, result.showers)
 
@@ -217,12 +217,12 @@ class TestImporter(TestCase):
             BackscatteredElectronEnergyDetector(100, (0.0, 20e3))
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(resultscontainer))
 
-        result = results['bse']
+        result = resultscontainer['bse']
 
         self.assertEqual(250, len(result))
 

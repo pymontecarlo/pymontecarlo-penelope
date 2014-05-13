@@ -39,7 +39,7 @@ setup(name="pyMonteCarlo-PENELOPE",
 
       packages=find_packages(),
 
-      install_requires=['penelopelib', 'pyMonteCarlo'],
+      install_requires=['pypenelopelib', 'pyMonteCarlo'],
 
       cmdclass={'clean': clean,
                 'bdist_deb_pendbase': bdist_deb_pendbase,
