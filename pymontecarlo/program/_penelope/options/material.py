@@ -71,7 +71,7 @@ class InteractionForcing(object):
     def __repr__(self):
         return '<%s(%s, %s, forcer=%i, weight=(%f, %f))>' % \
             (self.__class__.__name__, str(self.particle), str(self.collision),
-             self.forcer, self.weight.low, self.weight.high)
+             self.forcer, self.weight[0], self.weight[1])
 
     def __eq__(self, other):
         return self.particle is other.particle and \
@@ -193,11 +193,23 @@ class Material(_Material):
                    elastic_scattering, cutoff_energy_inelastic_eV, cutoff_energy_bremsstrahlung_eV,
                    interaction_forcings, maximum_step_length_m)
 
+    @classmethod
+    def from_material(cls, mat, elastic_scattering=(0.0, 0.0),
+                      cutoff_energy_inelastic_eV=50.0, cutoff_energy_bremsstrahlung_eV=50.0,
+                      interaction_forcings=None, maximum_step_length_m=1e20):
+        elastic_scattering = getattr(mat, 'elastic_scattering', elastic_scattering)
+        cutoff_energy_inelastic_eV = getattr(mat, 'cutoff_energy_inelastic_eV', cutoff_energy_inelastic_eV)
+        cutoff_energy_bremsstrahlung_eV = getattr(mat, 'cutoff_energy_bremsstrahlung_eV', cutoff_energy_bremsstrahlung_eV)
+        interaction_forcings = getattr(mat, 'interaction_forcings', interaction_forcings)
+        maximum_step_length_m = getattr(mat, 'maximum_step_length_m', maximum_step_length_m)
+
+        return cls(mat.composition, mat.name, mat.density_kg_m3, mat.absorption_energy_eV,
+                   elastic_scattering, cutoff_energy_inelastic_eV, cutoff_energy_bremsstrahlung_eV,
+                   interaction_forcings, maximum_step_length_m)
+
     def __repr__(self):
-        return '<Material(name=%s, composition=%s, density=%s kg/m3, abs_electron=%s eV, abs_photon=%s eV, abs_positron=%s eV, elastic_scattering=%s, cutoff_inelastic=%s eV, cutoff_bremsstrahlung=%s eV, interaction_forcings=%s, maximum_step_length=%s m)>' % \
-            (self.name, self.composition, self.density_kg_m3,
-             self.absorption_energy_electron_eV, self.absorption_energy_photon_eV,
-             self.absorption_energy_positron_eV,
+        return '<Material(name=%s, composition=%s, density=%s kg/m3, absorption energies=%s eV, elastic_scattering=%s, cutoff_inelastic=%s eV, cutoff_bremsstrahlung=%s eV, interaction_forcings=%s, maximum_step_length=%s m)>' % \
+            (self.name, self.composition, self.density_kg_m3, self.absorption_energy_eV,
              self.elastic_scattering,
              self.cutoff_energy_inelastic_eV, self.cutoff_energy_bremsstrahlung_eV,
              self.interaction_forcings, self.maximum_step_length_m)
