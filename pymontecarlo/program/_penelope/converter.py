@@ -78,21 +78,14 @@ class Converter(_Converter):
 
         # Replace material with PENLOPE material
         for old_material in options.geometry.get_materials():
-            new_material = self._create_penelope_material(old_material)
+            new_material = \
+                Material.from_material(old_material,
+                                       self._elastic_scattering,
+                                       self._cutoff_energy_inelastic_eV,
+                                       self._cutoff_energy_bremsstrahlung_eV,
+                                       self._interaction_forcings,
+                                       self._maximum_step_length_m)
             replace_material(options, old_material, new_material)
 
         return True
-
-    def _create_penelope_material(self, old):
-        # Do not convert PENELOPE material
-        if isinstance(old, Material):
-            return old
-
-        mat = Material(old.composition, old.name, old.density_kg_m3, old.absorption_energy_eV,
-                       self._elastic_scattering,
-                       self._cutoff_energy_inelastic_eV,
-                       self._cutoff_energy_bremsstrahlung_eV,
-                       self._interaction_forcings, self._maximum_step_length_m)
-
-        return mat
 
