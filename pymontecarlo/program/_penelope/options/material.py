@@ -116,7 +116,7 @@ class Material(_Material):
     def __init__(self, composition, name=None, density_kg_m3=None, absorption_energy_eV=None,
                  elastic_scattering=(0.0, 0.0),
                  cutoff_energy_inelastic_eV=50.0, cutoff_energy_bremsstrahlung_eV=50.0,
-                 interaction_forcings=None, maximum_step_length_m=1e20):
+                 interaction_forcings=None, maximum_step_length_m=1e15, *args, **kwargs):
         """
         Creates a new material.
 

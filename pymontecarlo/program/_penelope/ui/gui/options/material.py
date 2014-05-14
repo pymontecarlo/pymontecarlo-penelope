@@ -39,8 +39,6 @@ from pymontecarlo.ui.gui.options.material import MaterialDialog as _MaterialDial
 
 from pymontecarlo.program._penelope.options.material import Material, InteractionForcing
 
-from pymontecarlo.util.multipleloop import combine
-
 # Globals and constants variables.
 from pymontecarlo.options.particle import PARTICLES, ELECTRON
 from pymontecarlo.options.collision import COLLISIONS, DELTA
@@ -337,37 +335,37 @@ class MaterialDialog(_MaterialDialog):
         act_remove_forcing = QAction(getIcon("list-remove"), "Remove interaction forcing", self)
 
         # Widgets
-        lbl_elastic_scattering_c1 = QLabel('C1')
-        lbl_elastic_scattering_c1.setStyleSheet("color: blue")
+        self._lbl_elastic_scattering_c1 = QLabel('C1')
+        self._lbl_elastic_scattering_c1.setStyleSheet("color: blue")
         self._txt_elastic_scattering_c1 = MultiNumericalLineEdit()
         self._txt_elastic_scattering_c1.setValidator(_ElasticScatteringValidator())
         self._txt_elastic_scattering_c1.setValues([0.0])
 
-        lbl_elastic_scattering_c2 = QLabel('C2')
-        lbl_elastic_scattering_c2.setStyleSheet("color: blue")
+        self._lbl_elastic_scattering_c2 = QLabel('C2')
+        self._lbl_elastic_scattering_c2.setStyleSheet("color: blue")
         self._txt_elastic_scattering_c2 = MultiNumericalLineEdit()
         self._txt_elastic_scattering_c2.setValidator(_ElasticScatteringValidator())
         self._txt_elastic_scattering_c2.setValues([0.0])
 
-        lbl_cutoff_energy_inelastic = QLabel('Inelastic collisions')
-        lbl_cutoff_energy_inelastic.setStyleSheet("color: blue")
+        self._lbl_cutoff_energy_inelastic = QLabel('Inelastic collisions')
+        self._lbl_cutoff_energy_inelastic.setStyleSheet("color: blue")
         self._txt_cutoff_energy_inelastic = MultiNumericalLineEdit()
         self._txt_cutoff_energy_inelastic.setValidator(_CutoffEnergyValidator())
         self._txt_cutoff_energy_inelastic.setValues([50.0])
         self._cb_cutoff_energy_inelastic = UnitComboBox('eV')
 
-        lbl_cutoff_energy_bremsstrahlung = QLabel('Bremsstrahlung emission')
-        lbl_cutoff_energy_bremsstrahlung.setStyleSheet("color: blue")
+        self._lbl_cutoff_energy_bremsstrahlung = QLabel('Bremsstrahlung emission')
+        self._lbl_cutoff_energy_bremsstrahlung.setStyleSheet("color: blue")
         self._txt_cutoff_energy_bremsstrahlung = MultiNumericalLineEdit()
         self._txt_cutoff_energy_bremsstrahlung.setValidator(_CutoffEnergyValidator())
         self._txt_cutoff_energy_bremsstrahlung.setValues([50.0])
         self._cb_cutoff_energy_bremsstrahlung = UnitComboBox('eV')
 
-        lbl_maximum_step_length = QLabel('Maximum step length')
-        lbl_maximum_step_length.setStyleSheet("color: blue")
+        self._lbl_maximum_step_length = QLabel('Maximum step length')
+        self._lbl_maximum_step_length.setStyleSheet("color: blue")
         self._txt_maximum_step_length = MultiNumericalLineEdit()
         self._txt_maximum_step_length.setValidator(_MaximumStepLengthValidator())
-        self._txt_maximum_step_length.setValues([1e20])
+        self._txt_maximum_step_length.setValues([1e15])
         self._cb_maximum_step_length_unit = UnitComboBox('m')
 
         self._tbl_forcing = QTableView()
@@ -397,8 +395,8 @@ class MaterialDialog(_MaterialDialog):
 
         box_elastic_scattering = QGroupBox("Elastic scattering")
         boxlayout = QFormLayout()
-        boxlayout.addRow(lbl_elastic_scattering_c1, self._txt_elastic_scattering_c1)
-        boxlayout.addRow(lbl_elastic_scattering_c2, self._txt_elastic_scattering_c2)
+        boxlayout.addRow(self._lbl_elastic_scattering_c1, self._txt_elastic_scattering_c1)
+        boxlayout.addRow(self._lbl_elastic_scattering_c2, self._txt_elastic_scattering_c2)
         box_elastic_scattering.setLayout(boxlayout)
         sublayout.addWidget(box_elastic_scattering)
 
@@ -407,11 +405,11 @@ class MaterialDialog(_MaterialDialog):
         boxsublayout = QHBoxLayout()
         boxsublayout.addWidget(self._txt_cutoff_energy_inelastic, 1)
         boxsublayout.addWidget(self._cb_cutoff_energy_inelastic)
-        boxlayout.addRow(lbl_cutoff_energy_inelastic, boxsublayout)
+        boxlayout.addRow(self._lbl_cutoff_energy_inelastic, boxsublayout)
         boxsublayout = QHBoxLayout()
         boxsublayout.addWidget(self._txt_cutoff_energy_bremsstrahlung, 1)
         boxsublayout.addWidget(self._cb_cutoff_energy_bremsstrahlung)
-        boxlayout.addRow(lbl_cutoff_energy_bremsstrahlung, boxsublayout)
+        boxlayout.addRow(self._lbl_cutoff_energy_bremsstrahlung, boxsublayout)
         box_cutoff_energy.setLayout(boxlayout)
         sublayout.addWidget(box_cutoff_energy)
 
@@ -419,7 +417,7 @@ class MaterialDialog(_MaterialDialog):
         subsubsublayout = QHBoxLayout()
         subsubsublayout.addWidget(self._txt_maximum_step_length, 1)
         subsubsublayout.addWidget(self._cb_maximum_step_length_unit)
-        subsublayout.addRow(lbl_maximum_step_length, subsubsublayout)
+        subsublayout.addRow(self._lbl_maximum_step_length, subsubsublayout)
         sublayout.addLayout(subsublayout)
 
         box_forcing = QGroupBox('Interaction forcing')
@@ -490,121 +488,141 @@ class MaterialDialog(_MaterialDialog):
         for row in sorted(map(methodcaller('row'), selection), reverse=True):
             model.removeRow(row)
 
-    def values(self):
-        # Name
-        if self._chk_name_auto.isChecked():
-            name = None
-        else:
-            name = self._txt_name.text()
+    def _getParametersDict(self):
+        params = _MaterialDialog._getParametersDict(self)
 
-        # Density
-        if self._chk_density_user.isChecked():
-            density = self._txt_density.value()
-        else:
-            density = None
+        params['c1'] = self._txt_elastic_scattering_c1.values().tolist()
+        params['c2'] = self._txt_elastic_scattering_c2.values().tolist()
 
-        # Compositions
-        compositions = self._tbl_composition.model().compositions()
+        wcc = self._txt_cutoff_energy_inelastic.values() * self._cb_cutoff_energy_inelastic.factor()
+        params['wcc'] = wcc.tolist()
 
-        # Absorption energies
-        absorption_energies = {}
-        for particle in self._wdg_abs_energies.keys():
-            _, txt_energy, cb_unit = self._wdg_abs_energies[particle]
-            values = txt_energy.values() * cb_unit.factor()
-            if len(values) == 0:
-                values = [Material.DEFAULT_ABSORPTION_ENERGY_eV]
-            absorption_energies[particle] = values
+        wcr = self._txt_cutoff_energy_bremsstrahlung.values() * self._cb_cutoff_energy_bremsstrahlung.factor()
+        params['wcr'] = wcr.tolist()
 
-        combinations, names, _varied = combine(absorption_energies)
-        absorption_energies = [dict(zip(names, combination)) for combination in combinations]
+        dsmax = self._txt_maximum_step_length.values() * self._cb_maximum_step_length_unit.factor()
+        params['dsmax'] = dsmax.tolist()
 
-        # Elastic scatterings
-        c1s = self._txt_elastic_scattering_c1.values()
-        c2s = self._txt_elastic_scattering_c2.values()
-        elastic_scatterings = list(product(c1s, c2s))
-        print(elastic_scatterings)
+        params['forcings'] = \
+            self._tbl_forcing.model().interaction_forcings()
 
-        # Cutoff energies
-        wccs = self._txt_cutoff_energy_inelastic.values()
-        wcrs = self._txt_cutoff_energy_bremsstrahlung.values()
+        return params
 
-        # Interaction forcings
-        forcings = self._tbl_forcing.model().interaction_forcings()
-        print(forcings)
+    def _generateName(self, parameters, varied):
+        name = parameters.pop('name')
+        if name is None:
+            name = Material.generate_name(parameters['composition'])
 
-        # Create materials
-        materials = []
-        for composition, absorption_energy, elastic_scattering, wcc, wcr, forcing in \
-                product(compositions, absorption_energies, elastic_scatterings, wccs, wcrs, forcings):
-            materials.append(Material(composition=composition,
-                                      name=name,
-                                      density_kg_m3=density,
-                                      absorption_energy_eV=absorption_energy,
-                                      elastic_scattering=elastic_scattering,
-                                      cutoff_energy_inelastic_eV=wcc,
-                                      cutoff_energy_bremsstrahlung_eV=wcr,
-                                      interaction_forcings=forcing))
+        parts = [name]
+        for key in varied:
+            if key == 'composition':
+                continue
+            elif key == 'forcings':
+                forcing = parameters[key][0]
+                forcer = forcing.forcer
+                wlow = forcing.weight[0]
+                whigh = forcing.weight[1]
+                parts.append('forcings={0:n}_{1:n}_{2:n}'.format(forcer, wlow, whigh))
+            else:
+                parts.append('{0:s}={1:n}'.format(key, parameters[key]))
+        return '+'.join(parts)
 
-        return materials
+    def _createMaterial(self, parameters, varied):
+        mat = _MaterialDialog._createMaterial(self, parameters, varied)
+
+        c1 = parameters['c1']
+        c2 = parameters['c2']
+        wcc = parameters['wcc']
+        wcr = parameters['wcr']
+        dsmax = parameters['dsmax']
+        forcings = parameters['forcings']
+
+        return Material(mat.composition, mat.name, mat.density_kg_m3,
+                        mat.absorption_energy_eV,
+                        elastic_scattering=(c1, c2),
+                        cutoff_energy_inelastic_eV=wcc,
+                        cutoff_energy_bremsstrahlung_eV=wcr,
+                        interaction_forcings=forcings,
+                        maximum_step_length_m=dsmax)
 
     def setValue(self, material):
-        # Name
-        self._txt_name.setText(material.name)
-        self._chk_name_auto.setChecked(False)
+        _MaterialDialog.setValue(self, material)
 
-        # Density
-        self._txt_density.setText(str(material.density_kg_m3))
-        self._chk_density_user.setChecked(True)
+        # Elastic scattering
+        c1, c2 = material.elastic_scattering
+        self._txt_elastic_scattering_c1.setValues(c1)
+        self._txt_elastic_scattering_c2.setValues(c2)
 
-        # Composition
-        composition = material.composition
+        # Cutoff energy
+        self._txt_cutoff_energy_inelastic.setValues(material.cutoff_energy_inelastic_eV)
+        self._cb_cutoff_energy_inelastic.setUnit('eV')
 
-        model = self._tbl_composition.model()
+        self._txt_cutoff_energy_bremsstrahlung.setValues(material.cutoff_energy_bremsstrahlung_eV)
+        self._cb_cutoff_energy_bremsstrahlung.setUnit('eV')
+
+        # Maximum step length
+        self._txt_maximum_step_length.setValues(material.maximum_step_length_m)
+        self._cb_maximum_step_length_unit.setUnit('m')
+
+        # Interaction forcings
+        forcings = material.interaction_forcings
+
+        model = self._tbl_forcing.model()
         model.removeRows(0, model.rowCount())
-        model.insertRows(1, len(composition))
+        model.insertRows(1, len(forcings))
 
-        for row, z in enumerate(sorted(composition.keys())):
-            model.setData(model.index(row, 0), [z])
-            model.setData(model.index(row, 1), [composition[z]])
-
-        # Absorption energy
-        for _, txt_energy, cb_unit in self._wdg_abs_energies.values():
-            txt_energy.setText('')
-            cb_unit.setUnit('eV')
-
-        for particle, energy in material.absorption_energy_eV.items():
-            self._wdg_abs_energies[particle][1].setValues(energy)
+        for row, forcing in enumerate(forcings):
+            model.setData(model.index(row, 0), forcing.particle)
+            model.setData(model.index(row, 1), forcing.collision)
+            model.setData(model.index(row, 2), forcing.forcer)
+            model.setData(model.index(row, 3), forcing.weight[0])
+            model.setData(model.index(row, 4), forcing.weight[1])
 
     def setReadOnly(self, state):
-        style = 'color: none' if state else 'color: blue'
+        _MaterialDialog.setReadOnly(self, state)
 
-        self._txt_name.setReadOnly(state)
-        self._chk_name_auto.setEnabled(not state)
-        self._txt_density.setReadOnly(state)
-        self._chk_density_user.setEnabled(not state)
-        self._tbl_composition.setEnabled(not state)
-        self._tbl_composition.horizontalHeader().setStyleSheet(style)
-        self._tlb_composition.setVisible(not state)
-        for label, txt_energy, cb_unit in self._wdg_abs_energies.values():
-            label.setStyleSheet(style)
-            txt_energy.setReadOnly(state)
-            cb_unit.setEnabled(not state)
+        style = 'color: none' if state else 'color: blue'
+        self._lbl_elastic_scattering_c1.setStyleSheet(style)
+        self._txt_elastic_scattering_c1.setReadOnly(state)
+
+        self._lbl_elastic_scattering_c2.setStyleSheet(style)
+        self._txt_elastic_scattering_c2.setReadOnly(state)
+
+        self._lbl_cutoff_energy_inelastic.setStyleSheet(style)
+        self._txt_cutoff_energy_inelastic.setReadOnly(state)
+        self._cb_cutoff_energy_inelastic.setEnabled(not state)
+
+        self._lbl_cutoff_energy_bremsstrahlung.setStyleSheet(style)
+        self._txt_cutoff_energy_bremsstrahlung.setReadOnly(state)
+        self._cb_cutoff_energy_bremsstrahlung.setEnabled(not state)
+
+        self._lbl_maximum_step_length.setStyleSheet(style)
+        self._txt_maximum_step_length.setReadOnly(state)
+        self._cb_maximum_step_length_unit.setEnabled(not state)
+
+        self._tbl_forcing.setEnabled(not state)
+        self._tlb_forcing.setVisible(not state)
 
     def isReadOnly(self):
-        return self._txt_name.isReadOnly() and \
-            not self._chk_name_auto.isEnabled() and \
-            self._txt_density.isReadOnly() and \
-            not self._chk_density_user.isEnabled() and \
-            not self._tbl_composition.isEnabled() and \
-            not self._tlb_composition.isVisible() and \
-            all(map(lambda w: w[1].isReadOnly() and not w[2].isEnabled(),
-                    self._wdg_abs_energies.values()))
+        return _MaterialDialog.isReadOnly(self) and \
+            self._txt_elastic_scattering_c1.isReadOnly() and \
+            self._txt_elastic_scattering_c2.isReadOnly() and \
+            self._txt_cutoff_energy_inelastic.isReadOnly() and \
+            self._txt_cutoff_energy_bremsstrahlung.isReadOnly() and \
+            self._txt_maximum_step_length.isReadOnly() and \
+            not self._tbl_forcing.isEnabled() and \
+            not self._tlb_forcing.isVisible()
 
 def __run():
     import sys
     from PySide.QtGui import QApplication
 
-    material = Material({5: 0.5, 6: 0.5}, absorption_energy_eV={ELECTRON: 60.0})
+    material = Material({5: 0.5, 6: 0.5}, absorption_energy_eV={ELECTRON: 60.0},
+                        elastic_scattering=(0.05, 0.1),
+                        cutoff_energy_inelastic_eV=60.0,
+                        cutoff_energy_bremsstrahlung_eV=70.0,
+                        maximum_step_length_m=0.4,
+                        interaction_forcings=[InteractionForcing(ELECTRON, DELTA, -2.0, (0.05, 0.6))])
 
     app = QApplication(sys.argv)
 
@@ -613,7 +631,8 @@ def __run():
     if dialog.exec_():
         values = dialog.values()
         print(len(values))
-        print(values)
+        for value in values:
+            print(repr(value))
 
     app.exec_()
 
