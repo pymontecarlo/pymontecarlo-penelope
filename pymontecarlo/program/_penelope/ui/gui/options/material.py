@@ -37,7 +37,8 @@ from pymontecarlo.ui.gui.util.tango import getIcon
 
 from pymontecarlo.ui.gui.options.material import MaterialDialog as _MaterialDialog
 
-from pymontecarlo.program._penelope.options.material import Material, InteractionForcing
+from pymontecarlo.program._penelope.options.material import \
+    PenelopeMaterial, InteractionForcing
 
 # Globals and constants variables.
 from pymontecarlo.options.particle import PARTICLES, ELECTRON
@@ -319,7 +320,7 @@ class _InteractionForcingDelegate(QItemDelegate):
                 return
             model.setData(index, editor.value())
 
-class MaterialDialog(_MaterialDialog):
+class PenelopeMaterialDialog(_MaterialDialog):
 
     def __init__(self, parent=None):
         _MaterialDialog.__init__(self, parent)
@@ -511,7 +512,7 @@ class MaterialDialog(_MaterialDialog):
     def _generateName(self, parameters, varied):
         name = parameters.pop('name')
         if name is None:
-            name = Material.generate_name(parameters['composition'])
+            name = PenelopeMaterial.generate_name(parameters['composition'])
 
         parts = [name]
         for key in varied:
@@ -537,13 +538,13 @@ class MaterialDialog(_MaterialDialog):
         dsmax = parameters['dsmax']
         forcings = parameters['forcings']
 
-        return Material(mat.composition, mat.name, mat.density_kg_m3,
-                        mat.absorption_energy_eV,
-                        elastic_scattering=(c1, c2),
-                        cutoff_energy_inelastic_eV=wcc,
-                        cutoff_energy_bremsstrahlung_eV=wcr,
-                        interaction_forcings=forcings,
-                        maximum_step_length_m=dsmax)
+        return PenelopeMaterial(mat.composition, mat.name, mat.density_kg_m3,
+                                mat.absorption_energy_eV,
+                                elastic_scattering=(c1, c2),
+                                cutoff_energy_inelastic_eV=wcc,
+                                cutoff_energy_bremsstrahlung_eV=wcr,
+                                interaction_forcings=forcings,
+                                maximum_step_length_m=dsmax)
 
     def setValue(self, material):
         _MaterialDialog.setValue(self, material)
@@ -617,16 +618,17 @@ def __run():
     import sys
     from PySide.QtGui import QApplication
 
-    material = Material({5: 0.5, 6: 0.5}, absorption_energy_eV={ELECTRON: 60.0},
-                        elastic_scattering=(0.05, 0.1),
-                        cutoff_energy_inelastic_eV=60.0,
-                        cutoff_energy_bremsstrahlung_eV=70.0,
-                        maximum_step_length_m=0.4,
-                        interaction_forcings=[InteractionForcing(ELECTRON, DELTA, -2.0, (0.05, 0.6))])
+    material = \
+        PenelopeMaterial({5: 0.5, 6: 0.5}, absorption_energy_eV={ELECTRON: 60.0},
+                         elastic_scattering=(0.05, 0.1),
+                         cutoff_energy_inelastic_eV=60.0,
+                         cutoff_energy_bremsstrahlung_eV=70.0,
+                         maximum_step_length_m=0.4,
+                         interaction_forcings=[InteractionForcing(ELECTRON, DELTA, -2.0, (0.05, 0.6))])
 
     app = QApplication(sys.argv)
 
-    dialog = MaterialDialog(None)
+    dialog = PenelopeMaterialDialog(None)
     dialog.setValue(material)
     if dialog.exec_():
         values = dialog.values()

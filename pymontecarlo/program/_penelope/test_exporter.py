@@ -28,7 +28,7 @@ from pymontecarlo.options.geometry import \
     Substrate, Inclusion, HorizontalLayers, VerticalLayers, Sphere #, Cuboids2D
 from pymontecarlo.options.limit import TimeLimit
 
-from pymontecarlo.program._penelope.options.material import Material
+from pymontecarlo.program._penelope.options.material import PenelopeMaterial
 from pymontecarlo.program._penelope.converter import Converter
 from pymontecarlo.program._penelope.exporter import Exporter
 import pypenelopelib.pengeom as pengeom
@@ -55,7 +55,7 @@ class TestPenelopeExporter(TestCase):
     @attr('slow')
     def testexport_substrate(self):
         # Create
-        mat1 = Material({79: 0.5, 47: 0.5}, 'mat')
+        mat1 = PenelopeMaterial({79: 0.5, 47: 0.5}, 'mat')
 
         ops = Options()
         ops.geometry = Substrate(mat1)
@@ -78,8 +78,8 @@ class TestPenelopeExporter(TestCase):
     @attr('slow')
     def testexport_inclusion(self):
         # Create
-        mat1 = Material({79: 0.5, 47: 0.5}, 'mat')
-        mat2 = Material({29: 0.5, 30: 0.5}, 'mat')
+        mat1 = PenelopeMaterial({79: 0.5, 47: 0.5}, 'mat')
+        mat2 = PenelopeMaterial({29: 0.5, 30: 0.5}, 'mat')
 
         ops = Options()
         ops.geometry = Inclusion(mat1, mat2, 0.01)
@@ -105,9 +105,9 @@ class TestPenelopeExporter(TestCase):
     @attr('slow')
     def testexport_horizontal_layers(self):
         # Create
-        mat1 = Material({79: 0.5, 47: 0.5}, 'mat1')
-        mat2 = Material({29: 0.5, 30: 0.5}, 'mat2')
-        mat3 = Material({13: 0.5, 14: 0.5}, 'mat3')
+        mat1 = PenelopeMaterial({79: 0.5, 47: 0.5}, 'mat1')
+        mat2 = PenelopeMaterial({29: 0.5, 30: 0.5}, 'mat2')
+        mat3 = PenelopeMaterial({13: 0.5, 14: 0.5}, 'mat3')
 
         ops = Options()
         ops.beam.energy_eV = 1234
@@ -143,9 +143,9 @@ class TestPenelopeExporter(TestCase):
     @attr('slow')
     def testexport_vertical_layers(self):
         # Create
-        mat1 = Material({79: 0.5, 47: 0.5}, 'mat1')
-        mat2 = Material({29: 0.5, 30: 0.5}, 'mat2')
-        mat3 = Material({13: 0.5, 14: 0.5}, 'mat3')
+        mat1 = PenelopeMaterial({79: 0.5, 47: 0.5}, 'mat1')
+        mat2 = PenelopeMaterial({29: 0.5, 30: 0.5}, 'mat2')
+        mat3 = PenelopeMaterial({13: 0.5, 14: 0.5}, 'mat3')
 
         ops = Options()
         ops.beam.energy_eV = 1234
@@ -180,7 +180,7 @@ class TestPenelopeExporter(TestCase):
     @attr('slow')
     def testexport_sphere(self):
         # Create
-        mat1 = Material({79: 0.5, 47: 0.5}, 'mat')
+        mat1 = PenelopeMaterial({79: 0.5, 47: 0.5}, 'mat')
 
         ops = Options()
         ops.geometry = Sphere(mat1, 0.01)
@@ -203,7 +203,7 @@ class TestPenelopeExporter(TestCase):
 #    @attr('slow')
 #    def testexport_cuboids2d(self):
 #        # Create
-#        mat1 = Material('mat', {79: 0.5, 47: 0.5})
+#        mat1 = PenelopeMaterial('mat', {79: 0.5, 47: 0.5})
 #
 #        ops = Options()
 #

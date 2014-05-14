@@ -111,7 +111,7 @@ class InteractionForcing(object):
         """
         return self._weight
 
-class Material(_Material):
+class PenelopeMaterial(_Material):
 
     def __init__(self, composition, name=None, density_kg_m3=None, absorption_energy_eV=None,
                  elastic_scattering=(0.0, 0.0),

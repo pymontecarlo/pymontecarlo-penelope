@@ -22,7 +22,8 @@ from pymontecarlo.options.material import VACUUM
 from pymontecarlo.program._penelope.options.geometry import \
     (Rotation, Shift, Scale, SurfaceImplicit, SurfaceReduced,
      xplane, zplane, cylinder, Module, PenelopeGeometry)
-from pymontecarlo.program._penelope.options.material import Material, InteractionForcing
+from pymontecarlo.program._penelope.options.material import \
+    PenelopeMaterial, InteractionForcing
 
 # Globals and constants variables.
 from pymontecarlo.program._penelope.options.geometry import \
@@ -212,7 +213,7 @@ class TestModule(TestCase):
         TestCase.setUp(self)
 
         intforce = InteractionForcing(ELECTRON, HARD_BREMSSTRAHLUNG_EMISSION, -4)
-        mat1 = Material.pure(29, interaction_forcings=[intforce],
+        mat1 = PenelopeMaterial.pure(29, interaction_forcings=[intforce],
                              maximum_step_length_m=1e4)
         mat1._index = 1
 
@@ -373,7 +374,7 @@ class TestPenelopeGeometry(TestCase):
         surface3 = cylinder(1e-2)
         surface4 = xplane(0.0)
 
-        mat1 = Material.pure(29)
+        mat1 = PenelopeMaterial.pure(29)
         self.module1 = Module(self.geo, mat1)
         self.module1.add_surface(surface1, SIDEPOINTER_NEGATIVE)
         self.module1.add_surface(surface2, SIDEPOINTER_POSITIVE)
@@ -381,7 +382,7 @@ class TestPenelopeGeometry(TestCase):
         self.module1.add_surface(surface4, SIDEPOINTER_POSITIVE)
         self.geo.modules.add(self.module1)
 
-        mat2 = Material.pure(30)
+        mat2 = PenelopeMaterial.pure(30)
         self.module2 = Module(self.geo, mat2)
         self.module2.add_surface(surface1, SIDEPOINTER_NEGATIVE)
         self.module2.add_surface(surface2, SIDEPOINTER_POSITIVE)

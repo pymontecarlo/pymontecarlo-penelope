@@ -27,7 +27,7 @@ import xml.etree.ElementTree as etree
 from pymontecarlo.fileformat.options.material import \
     MaterialXMLHandler as _MaterialXMLHandler
 from pymontecarlo.program._penelope.options.material import \
-    Material, InteractionForcing
+    PenelopeMaterial, InteractionForcing
 
 # Globals and constants variables.
 from pymontecarlo.options.particle import PARTICLES
@@ -35,10 +35,10 @@ _PARTICLES_LOOKUP = dict(zip(map(str, PARTICLES), PARTICLES))
 from pymontecarlo.options.collision import COLLISIONS
 _COLLISIONS_LOOKUP = dict(zip(map(str, COLLISIONS), COLLISIONS))
 
-class MaterialXMLHandler(_MaterialXMLHandler):
+class PenelopeMaterialXMLHandler(_MaterialXMLHandler):
 
     TAG = '{http://pymontecarlo.sf.net/penelope}material'
-    CLASS = Material
+    CLASS = PenelopeMaterial
 
     def parse(self, element):
         mat = _MaterialXMLHandler.parse(self, element)
@@ -59,11 +59,11 @@ class MaterialXMLHandler(_MaterialXMLHandler):
 
         maximum_step_length_m = float(element.get('dsmax'))
 
-        return Material(mat.composition, mat.name, mat.density_kg_m3,
-                        mat.absorption_energy_eV, elastic_scattering,
-                        cutoff_energy_inelastic_eV,
-                        cutoff_energy_bremsstrahlung_eV,
-                        interaction_forcings, maximum_step_length_m)
+        return PenelopeMaterial(mat.composition, mat.name, mat.density_kg_m3,
+                                mat.absorption_energy_eV, elastic_scattering,
+                                cutoff_energy_inelastic_eV,
+                                cutoff_energy_bremsstrahlung_eV,
+                                interaction_forcings, maximum_step_length_m)
 
     def convert(self, obj):
         element = _MaterialXMLHandler.convert(self, obj)

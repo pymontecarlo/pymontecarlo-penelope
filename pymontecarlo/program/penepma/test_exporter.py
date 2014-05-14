@@ -29,7 +29,7 @@ from pymontecarlo.options.detector import \
      TimeDetector)
 from pymontecarlo.program.penepma.converter import Converter
 from pymontecarlo.program._penelope.options.material import \
-    Material, InteractionForcing
+    PenelopeMaterial, InteractionForcing
 from pymontecarlo.program.penepma.exporter import Exporter, ExporterException
 
 # Globals and constants variables.
@@ -131,7 +131,7 @@ class TestPenelopeExporter(TestCase):
         ops = Options()
         ops.beam.energy_eV = 30e3
         intfor = InteractionForcing(ELECTRON, HARD_ELASTIC, -40)
-        ops.geometry.material = Material.pure(29, interaction_forcings=[intfor])
+        ops.geometry.material = PenelopeMaterial.pure(29, interaction_forcings=[intfor])
         ops.detectors['det1'] = TimeDetector()
         ops.limits.add(TimeLimit(100))
 

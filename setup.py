@@ -57,7 +57,10 @@ setup(name="pyMonteCarlo-PENELOPE",
                          'penshower=pymontecarlo.program.penshower.config_gui:gui'],
 
                     'pymontecarlo.fileformat.options.material':
-                        ['Material = pymontecarlo.program._penelope.fileformat.options.material:MaterialXMLHandler'], },
+                        ['PenelopeMaterial = pymontecarlo.program._penelope.fileformat.options.material:PenelopeMaterialXMLHandler'],
+                    'pymontecarlo.ui.gui.options.material':
+                        ['PenelopeMaterial = pymontecarlo.program._penelope.ui.gui.options.material:PenelopeMaterialDialog'],
+                    },
 
       test_suite='nose.collector',
 )

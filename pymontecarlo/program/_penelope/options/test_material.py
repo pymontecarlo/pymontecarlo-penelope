@@ -20,7 +20,7 @@ from pymontecarlo.testcase import TestCase
 from pymontecarlo.options.particle import ELECTRON, PHOTON, POSITRON
 
 from pymontecarlo.program._penelope.options.material import \
-    Material, InteractionForcing
+    PenelopeMaterial, InteractionForcing
 
 # Globals and constants variables.
 from pymontecarlo.options.collision import \
@@ -97,12 +97,12 @@ class TestMaterial(TestCase):
 
         if1 = InteractionForcing(ELECTRON, HARD_BREMSSTRAHLUNG_EMISSION,
                                  - 4, (0.1, 1.0))
-        self.m = Material({'Cu': 1.0}, 'Pure Cu', density_kg_m3=8960.0,
-                          elastic_scattering=(0.1, 0.2),
-                          cutoff_energy_inelastic_eV=51.2,
-                          cutoff_energy_bremsstrahlung_eV=53.4,
-                          interaction_forcings=[if1],
-                          maximum_step_length_m=123.456)
+        self.m = PenelopeMaterial({'Cu': 1.0}, 'Pure Cu', density_kg_m3=8960.0,
+                                  elastic_scattering=(0.1, 0.2),
+                                  cutoff_energy_inelastic_eV=51.2,
+                                  cutoff_energy_bremsstrahlung_eV=53.4,
+                                  interaction_forcings=[if1],
+                                  maximum_step_length_m=123.456)
 
     def tearDown(self):
         TestCase.tearDown(self)
@@ -139,7 +139,7 @@ class TestMaterial(TestCase):
         self.assertAlmostEqual(123.456, self.m.maximum_step_length_m, 4)
 
     def testpure(self):
-        m = Material.pure(29)
+        m = PenelopeMaterial.pure(29)
 
         self.assertEqual('Copper', str(m))
 
