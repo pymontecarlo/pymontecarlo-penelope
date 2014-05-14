@@ -47,7 +47,7 @@ from pymontecarlo.options.detector import \
      ShowersStatisticsDetector,
      )
 
-from pymontecarlo.util.expander import ExpanderSingleDetector
+from pymontecarlo.util.expander import OptionsExpanderSingleDetector
 
 # Globals and constants variables.
 
@@ -86,7 +86,7 @@ class Converter(_Converter):
                             cutoff_energy_bremsstrahlung)
 
         dets = [BackscatteredElectronEnergyDetector]
-        self._expander = ExpanderSingleDetector(dets)
+        self._expander = OptionsExpanderSingleDetector(dets)
 
     def _convert_beam(self, options):
         if type(options.beam) is PencilBeam:

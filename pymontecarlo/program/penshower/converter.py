@@ -29,7 +29,7 @@ from pymontecarlo.options.beam import GaussianBeam, PencilBeam
 from pymontecarlo.options.limit import ShowersLimit
 from pymontecarlo.options.detector import TrajectoryDetector
 
-from pymontecarlo.util.expander import ExpanderSingleDetector
+from pymontecarlo.util.expander import OptionsExpanderSingleDetector
 
 # Globals and constants variables.
 
@@ -51,7 +51,7 @@ class Converter(_Converter):
         _Converter.__init__(self, elastic_scattering, cutoff_energy_inelastic,
                             cutoff_energy_bremsstrahlung)
 
-        self._expander = ExpanderSingleDetector([TrajectoryDetector])
+        self._expander = OptionsExpanderSingleDetector([TrajectoryDetector])
 
     def _convert_beam(self, options):
         if type(options.beam) is PencilBeam:
