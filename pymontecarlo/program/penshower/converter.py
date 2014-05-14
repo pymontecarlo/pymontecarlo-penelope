@@ -25,6 +25,7 @@ __license__ = "GPL v3"
 # Local modules.
 from pymontecarlo.program._penelope.converter import Converter as _Converter
 
+from pymontecarlo.options.particle import ELECTRON, PHOTON, POSITRON
 from pymontecarlo.options.beam import GaussianBeam, PencilBeam
 from pymontecarlo.options.limit import ShowersLimit
 from pymontecarlo.options.detector import TrajectoryDetector
@@ -34,6 +35,8 @@ from pymontecarlo.util.expander import OptionsExpanderSingleDetector
 # Globals and constants variables.
 
 class Converter(_Converter):
+
+    PARTICLES = [ELECTRON, PHOTON, POSITRON]
     BEAMS = [GaussianBeam]
     DETECTORS = [TrajectoryDetector]
     LIMITS = [ShowersLimit]

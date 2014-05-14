@@ -52,6 +52,8 @@ from pymontecarlo.util.expander import OptionsExpanderSingleDetector
 # Globals and constants variables.
 
 class Converter(_Converter):
+
+    PARTICLES = [ELECTRON]
     BEAMS = [GaussianBeam]
     DETECTORS = [
 #                 BackscatteredElectronAzimuthalAngularDetector,
@@ -98,11 +100,6 @@ class Converter(_Converter):
             self._warn("Pencil beam converted to Gaussian beam with 0 m diameter")
 
         if not _Converter._convert_beam(self, options):
-            return False
-
-        if options.beam.particle is not ELECTRON:
-            self._warn("Beam particle must be ELECTRON",
-                       "This options definition was removed.")
             return False
 
         return True

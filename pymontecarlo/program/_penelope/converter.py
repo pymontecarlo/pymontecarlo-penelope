@@ -32,11 +32,12 @@ from pymontecarlo.options.model import \
      MASS_ABSORPTION_COEFFICIENT)
 from pymontecarlo.options.helper import replace_material
 
-from pymontecarlo.program._penelope.options.material import Material
+from pymontecarlo.program._penelope.options.material import PenelopeMaterial
 
 # Globals and constants variables.
 
 class Converter(_Converter):
+    MATERIALS = [PenelopeMaterial]
     GEOMETRIES = [Substrate, HorizontalLayers, VerticalLayers, Inclusion, Sphere] #, Cuboids2D]
     MODELS = {ELASTIC_CROSS_SECTION: [ELASTIC_CROSS_SECTION.elsepa2005],
               INELASTIC_CROSS_SECTION: [INELASTIC_CROSS_SECTION.sternheimer_liljequist1952],
@@ -73,19 +74,19 @@ class Converter(_Converter):
         self._maximum_step_length_m = maximum_step_length_m
 
     def _convert_geometry(self, options):
-        if not _Converter._convert_geometry(self, options):
-            return False
-
         # Replace material with PENLOPE material
         for old_material in options.geometry.get_materials():
             new_material = \
-                Material.from_material(old_material,
-                                       self._elastic_scattering,
-                                       self._cutoff_energy_inelastic_eV,
-                                       self._cutoff_energy_bremsstrahlung_eV,
-                                       self._interaction_forcings,
-                                       self._maximum_step_length_m)
+                PenelopeMaterial.from_material(old_material,
+                                               self._elastic_scattering,
+                                               self._cutoff_energy_inelastic_eV,
+                                               self._cutoff_energy_bremsstrahlung_eV,
+                                               self._interaction_forcings,
+                                               self._maximum_step_length_m)
             replace_material(options, old_material, new_material)
+
+        if not _Converter._convert_geometry(self, options):
+            return False
 
         return True
 
