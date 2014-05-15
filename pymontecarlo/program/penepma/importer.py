@@ -30,16 +30,14 @@ from pyxray.transition import Transition
 
 # Local modules.
 from pymontecarlo.results.result import \
-    (
-    PhotonIntensityResult,
-    PhotonSpectrumResult,
-    ElectronFractionResult,
-    TimeResult,
-    ShowersStatisticsResult,
-    PhotonDepthResult,
-    create_intensity_dict,
-    create_photondist_dict,
-    BackscatteredElectronEnergyResult,
+    (PhotonKey,
+     PhotonIntensityResult,
+     PhotonSpectrumResult,
+     ElectronFractionResult,
+     TimeResult,
+     ShowersStatisticsResult,
+     PhotonDepthResult,
+     BackscatteredElectronEnergyResult,
     )
 from pymontecarlo.options.detector import \
     (
@@ -57,8 +55,6 @@ from pymontecarlo.program.importer import Importer as _Importer, ImporterExcepti
 from pymontecarlo.program.penepma.options.detector import index_delimited_detectors
 
 # Globals and constants variables.
-from pymontecarlo.results.result import \
-    EMITTED, NOFLUORESCENCE, CHARACTERISTIC, BREMSSTRAHLUNG, TOTAL
 
 def _load_dat_files(filepath):
     bins = []
@@ -176,10 +172,13 @@ class Importer(_Importer):
 
                 transition, gcf, gbf, gnf, gt = _read_intensities_line(line)
 
-                if transition is not None:
-                    tmpintensities = \
-                        create_intensity_dict(transition, gcf, gbf, gnf, gt)
-                    intensities.update(tmpintensities)
+                if transition is None:
+                    continue
+
+                intensities[PhotonKey(transition, False, PhotonKey.C)] = gcf
+                intensities[PhotonKey(transition, False, PhotonKey.B)] = gbf
+                intensities[PhotonKey(transition, False, PhotonKey.P)] = gnf
+                intensities[PhotonKey(transition, False, PhotonKey.T)] = gt
 
         # Load emitted
         with open(emitted_filepath, 'r') as fp:
@@ -189,12 +188,13 @@ class Importer(_Importer):
 
                 transition, ecf, ebf, enf, et = _read_intensities_line(line)
 
-                if transition is not None:
-                    tmpintensities = intensities[transition]
-                    tmpintensities[EMITTED][CHARACTERISTIC] = ecf
-                    tmpintensities[EMITTED][BREMSSTRAHLUNG] = ebf
-                    tmpintensities[EMITTED][NOFLUORESCENCE] = enf
-                    tmpintensities[EMITTED][TOTAL] = et
+                if transition is None:
+                    continue
+
+                intensities[PhotonKey(transition, True, PhotonKey.C)] = ecf
+                intensities[PhotonKey(transition, True, PhotonKey.B)] = ebf
+                intensities[PhotonKey(transition, True, PhotonKey.P)] = enf
+                intensities[PhotonKey(transition, True, PhotonKey.T)] = et
 
         return PhotonIntensityResult(intensities)
 
@@ -250,7 +250,10 @@ class Importer(_Importer):
             enf = np.array([data['zs'], data['enf'], data['enf_unc']]).T
             et = np.array([data['zfs'], data['et'], data['et_unc']]).T
 
-            distributions.update(create_photondist_dict(transition, gnf, gt, enf, et))
+            distributions[PhotonKey(transition, False, PhotonKey.P)] = gnf
+            distributions[PhotonKey(transition, False, PhotonKey.T)] = gt
+            distributions[PhotonKey(transition, True, PhotonKey.P)] = enf
+            distributions[PhotonKey(transition, True, PhotonKey.T)] = et
 
         return PhotonDepthResult(distributions)
 
