@@ -14,10 +14,15 @@ from setuptools import setup, find_packages
 
 # Local modules.
 from pymontecarlo.util.dist.command import clean
-from pymontecarlo.program._penelope.util.dist.command import \
+try:
+    from pymontecarlo.program._penelope.util.dist.command import \
     bdist_deb_pendbase, bdist_deb_material
-from pymontecarlo.program.penepma.util.dist.command import \
-    bdist_deb_penepma
+    from pymontecarlo.program.penepma.util.dist.command import \
+        bdist_deb_penepma
+except ImportError:
+    bdist_deb_pendbase = None
+    bdist_deb_material = None
+    bdist_deb_penepma = None
 
 # Globals and constants variables.
 
