@@ -66,9 +66,9 @@ class Worker(_Worker):
         self._status = 'Running PENEPMA'
         self._progress = 0.001 # Ensure that the simulation has started
 
-        with subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, cwd=workdir) as self._process:
-            for line in iter(self._process.stdout.readline, b""):
+        with self._create_process(args, stdin=stdin, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, cwd=workdir) as process:
+            for line in iter(process.stdout.readline, b""):
                 infos = line.decode('ascii').split(',')
                 if len(infos) == 1:
                     self._status = infos[0].strip()
@@ -82,11 +82,7 @@ class Worker(_Worker):
                                          progress_uncertainty)
                     self._status = 'Running'
 
-            self._process.wait()
-            retcode = self._process.returncode
-
-        self._process = None
-        stdin.close()
+        retcode = self._join_process()
 
         if retcode != 0:
             raise RuntimeError("An error occurred during the simulation")
