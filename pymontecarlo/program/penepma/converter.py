@@ -29,19 +29,10 @@ from pymontecarlo.options.particle import ELECTRON
 from pymontecarlo.options.beam import GaussianBeam, PencilBeam
 from pymontecarlo.options.limit import TimeLimit, ShowersLimit, UncertaintyLimit
 from pymontecarlo.options.detector import \
-    (
-#     BackscatteredElectronAzimuthalAngularDetector,
-     BackscatteredElectronEnergyDetector,
-#     BackscatteredElectronPolarAngularDetector,
-#     EnergyDepositedSpatialDetector,
+    (BackscatteredElectronEnergyDetector,
      PhotonDepthDetector,
-#     PhotonAzimuthalAngularDetector,
      PhotonIntensityDetector,
-#     PhotonPolarAngularDetector,
      PhotonSpectrumDetector,
-#     TransmittedElectronAzimuthalAngularDetector,
-#     TransmittedElectronEnergyDetector,
-#     TransmittedElectronPolarAngularDetector
      ElectronFractionDetector,
      TimeDetector,
      ShowersStatisticsDetector,
@@ -55,19 +46,10 @@ class Converter(_Converter):
 
     PARTICLES = [ELECTRON]
     BEAMS = [GaussianBeam]
-    DETECTORS = [
-#                 BackscatteredElectronAzimuthalAngularDetector,
-                 BackscatteredElectronEnergyDetector,
-#                 BackscatteredElectronPolarAngularDetector,
-#                 EnergyDepositedSpatialDetector,
+    DETECTORS = [BackscatteredElectronEnergyDetector,
                  PhotonDepthDetector,
-#                 PhotonAzimuthalAngularDetector,
-#                 PhotonPolarAngularDetector,
                  PhotonSpectrumDetector,
                  PhotonIntensityDetector,
-#                 TransmittedElectronAzimuthalAngularDetector,
-#                 TransmittedElectronEnergyDetector,
-#                 TransmittedElectronPolarAngularDetector,
                  ElectronFractionDetector,
                  TimeDetector,
                  ShowersStatisticsDetector,
