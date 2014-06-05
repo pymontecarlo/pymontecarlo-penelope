@@ -29,6 +29,7 @@ from operator import mul
 from pymontecarlo.settings import get_settings
 
 from pymontecarlo.options.particle import ELECTRON, PHOTON, POSITRON
+from pymontecarlo.options.beam import GaussianBeam
 from pymontecarlo.options.limit import ShowersLimit
 from pymontecarlo.options.detector import TrajectoryDetector
 
@@ -74,7 +75,17 @@ class Exporter(_Exporter):
         """
         Creates a exporter to PENSHOWER.
         """
-        _Exporter.__init__(self, get_settings().penshower.pendbase)
+        try:
+            pendbase = get_settings().penepma.pendbase
+        except AttributeError:
+            pendbase = None
+        _Exporter.__init__(self, pendbase)
+
+        self._beam_exporters[GaussianBeam] = self._export_dummy
+
+        self._detector_exporters[TrajectoryDetector] = self._export_dummy
+
+        self._limit_exporters[ShowersLimit] = self._export_dummy
 
     def _create_input_file(self, options, outputdir, geoinfo, matinfos, *args):
         # Create lines

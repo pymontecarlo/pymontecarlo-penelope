@@ -30,6 +30,10 @@ import numpy as np
 from pymontecarlo.options.geometry import \
     Substrate, Inclusion, HorizontalLayers, VerticalLayers, Sphere #, Cuboids2D
 from pymontecarlo.options.material import VACUUM
+from pymontecarlo.options.model import \
+    (ELASTIC_CROSS_SECTION, INELASTIC_CROSS_SECTION, IONIZATION_CROSS_SECTION,
+     BREMSSTRAHLUNG_EMISSION, PHOTON_SCATTERING_CROSS_SECTION,
+     MASS_ABSORPTION_COEFFICIENT)
 
 from pymontecarlo.program._penelope.options.geometry import \
     PenelopeGeometry, Module, xplane, yplane, zplane, cylinder, sphere
@@ -119,6 +123,13 @@ class Exporter(_Exporter):
         self._geometry_exporters[VerticalLayers] = self._export_geometry_vertical_layers
         self._geometry_exporters[Sphere] = self._export_geometry_sphere
 #        self._geometry_exporters[Cuboids2D] = self._export_geometry_cuboids2d
+
+        self._model_exporters[ELASTIC_CROSS_SECTION] = self._export_dummy
+        self._model_exporters[INELASTIC_CROSS_SECTION] = self._export_dummy
+        self._model_exporters[IONIZATION_CROSS_SECTION] = self._export_dummy
+        self._model_exporters[BREMSSTRAHLUNG_EMISSION] = self._export_dummy
+        self._model_exporters[PHOTON_SCATTERING_CROSS_SECTION] = self._export_dummy
+        self._model_exporters[MASS_ABSORPTION_COEFFICIENT] = self._export_dummy
 
         self._pendbase_dir = pendbase_dir
 

@@ -39,9 +39,16 @@ from pymontecarlo.options.collision import \
      ELECTRON_POSITRON_PAIR_PRODUCTION, ANNIHILATION)
 from pymontecarlo.options.material import VACUUM
 from pymontecarlo.options.detector import \
-    (_PhotonDelimitedDetector, PhotonSpectrumDetector, PhotonDepthDetector,
-     BackscatteredElectronEnergyDetector)
+    (_PhotonDelimitedDetector,
+     PhotonSpectrumDetector,
+     PhotonDepthDetector,
+     BackscatteredElectronEnergyDetector,
+     PhotonIntensityDetector,
+     ElectronFractionDetector,
+     TimeDetector,
+     ShowersStatisticsDetector,)
 from pymontecarlo.options.limit import ShowersLimit, TimeLimit, UncertaintyLimit
+from pymontecarlo.options.beam import GaussianBeam
 
 from pymontecarlo.program._penelope.exporter import \
     Exporter as _Exporter, Keyword, Comment, ExporterException, ExporterWarning
@@ -133,7 +140,25 @@ class Exporter(_Exporter):
         """
         Creates a exporter to PENEPMA.
         """
-        _Exporter.__init__(self, get_settings().penepma.pendbase)
+        try:
+            pendbase = get_settings().penepma.pendbase
+        except AttributeError:
+            pendbase = None
+        _Exporter.__init__(self, pendbase)
+
+        self._beam_exporters[GaussianBeam] = self._export_dummy
+
+        self._detector_exporters[BackscatteredElectronEnergyDetector] = self._export_dummy
+        self._detector_exporters[PhotonDepthDetector] = self._export_dummy
+        self._detector_exporters[PhotonSpectrumDetector] = self._export_dummy
+        self._detector_exporters[PhotonIntensityDetector] = self._export_dummy
+        self._detector_exporters[ElectronFractionDetector] = self._export_dummy
+        self._detector_exporters[TimeDetector] = self._export_dummy
+        self._detector_exporters[ShowersStatisticsDetector] = self._export_dummy
+
+        self._limit_exporters[ShowersLimit] = self._export_dummy
+        self._limit_exporters[TimeLimit] = self._export_dummy
+        self._limit_exporters[UncertaintyLimit] = self._export_dummy
 
     def _create_input_file(self, options, outputdir, geoinfo, matinfos, *args):
         """
