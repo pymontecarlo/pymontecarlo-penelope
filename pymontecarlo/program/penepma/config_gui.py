@@ -32,7 +32,7 @@ from pymontecarlo.ui.gui.util.widget import FileBrowseWidget, DirBrowseWidget
 
 class _PenepmaConfigurePanelWidget(_ConfigurePanelWidget):
 
-    def _initUI(self, settings):
+    def _initUI(self):
         # Widgets
         self._brw_pendbase = DirBrowseWidget()
 
@@ -47,7 +47,7 @@ class _PenepmaConfigurePanelWidget(_ConfigurePanelWidget):
         self._spn_dumpp.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # Layouts
-        layout = _ConfigurePanelWidget._initUI(self, settings)
+        layout = _ConfigurePanelWidget._initUI(self)
         layout.addRow("Path to pendbase directory", self._brw_pendbase)
         layout.addRow('Path to PENEPMA executable', self._brw_exe)
         layout.addRow('Interval between dump (s)', self._spn_dumpp)
@@ -55,26 +55,6 @@ class _PenepmaConfigurePanelWidget(_ConfigurePanelWidget):
         # Signals
         self._brw_pendbase.pathChanged.connect(self._onPathChanged)
         self._brw_exe.pathChanged.connect(self._onPathChanged)
-
-        # Values
-        if 'penepma' in settings:
-            path = getattr(settings.penepma, 'pendbase', None)
-            try:
-                self._brw_pendbase.setPath(path)
-            except ValueError:
-                pass
-
-            path = getattr(settings.penepma, 'exe', None)
-            try:
-                self._brw_exe.setPath(path)
-            except ValueError:
-                pass
-
-            try:
-                dumpp = int(getattr(settings.penepma, 'dumpp', 30))
-                self._spn_dumpp.setValue(dumpp)
-            except (TypeError, ValueError):
-                pass
 
         return layout
 
@@ -94,6 +74,26 @@ class _PenepmaConfigurePanelWidget(_ConfigurePanelWidget):
         if not os.access(self._brw_exe.path(), os.X_OK):
             return False
         return True
+
+    def setSettings(self, settings):
+        if 'penepma' in settings:
+            path = getattr(settings.penepma, 'pendbase', None)
+            try:
+                self._brw_pendbase.setPath(path)
+            except ValueError:
+                pass
+
+            path = getattr(settings.penepma, 'exe', None)
+            try:
+                self._brw_exe.setPath(path)
+            except ValueError:
+                pass
+
+            try:
+                dumpp = int(getattr(settings.penepma, 'dumpp', 30))
+                self._spn_dumpp.setValue(dumpp)
+            except (TypeError, ValueError):
+                pass
 
     def updateSettings(self, settings):
         section = _ConfigurePanelWidget.updateSettings(self, settings)

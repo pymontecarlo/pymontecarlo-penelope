@@ -31,7 +31,7 @@ from pymontecarlo.ui.gui.util.widget import FileBrowseWidget, DirBrowseWidget
 
 class _PenshowerConfigurePanelWidget(_ConfigurePanelWidget):
 
-    def _initUI(self, settings):
+    def _initUI(self):
         # Widgets
         self._brw_pendbase = DirBrowseWidget()
 
@@ -42,27 +42,13 @@ class _PenshowerConfigurePanelWidget(_ConfigurePanelWidget):
             self._brw_exe.setNameFilter('Application files (*)')
 
         # Layouts
-        layout = _ConfigurePanelWidget._initUI(self, settings)
+        layout = _ConfigurePanelWidget._initUI(self)
         layout.addRow("Path to pendbase directory", self._brw_pendbase)
         layout.addRow('Path to PENSHOWER executable', self._brw_exe)
 
         # Signals
         self._brw_pendbase.pathChanged.connect(self._onPathChanged)
         self._brw_exe.pathChanged.connect(self._onPathChanged)
-
-        # Values
-        if 'penshower' in settings:
-            path = getattr(settings.penshower, 'pendbase', None)
-            try:
-                self._brw_pendbase.setPath(path)
-            except ValueError:
-                pass
-
-            path = getattr(settings.penshower, 'exe', None)
-            try:
-                self._brw_exe.setPath(path)
-            except ValueError:
-                pass
 
         return layout
 
@@ -82,6 +68,20 @@ class _PenshowerConfigurePanelWidget(_ConfigurePanelWidget):
         if not os.access(self._brw_exe.path(), os.X_OK):
             return False
         return True
+
+    def setSettings(self, settings):
+        if 'penshower' in settings:
+            path = getattr(settings.penshower, 'pendbase', None)
+            try:
+                self._brw_pendbase.setPath(path)
+            except ValueError:
+                pass
+
+            path = getattr(settings.penshower, 'exe', None)
+            try:
+                self._brw_exe.setPath(path)
+            except ValueError:
+                pass
 
     def updateSettings(self, settings):
         section = _ConfigurePanelWidget.updateSettings(self, settings)

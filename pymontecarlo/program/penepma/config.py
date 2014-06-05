@@ -58,4 +58,18 @@ class _PenepmaProgram(_PenelopeProgram):
         if not os.access(exe, os.X_OK):
             raise AssertionError("Specified PENEPMA executable (%s) is not executable" % exe)
 
+    def autoconfig(self, programs_path):
+        if not _PenelopeProgram.autoconfig(self, programs_path):
+            return False
+
+        exe_path = os.path.join(programs_path, self.alias, 'penepma.exe')
+        if not os.path.exists(exe_path):
+            return False
+
+        settings = get_settings()
+        settings.add_section('penepma').exe = exe_path
+        settings.add_section('penepma').dumpp = 30
+
+        return True
+
 program = _PenepmaProgram()

@@ -17,15 +17,26 @@ __copyright__ = "Copyright (c) 2012 Philippe T. Pinard"
 __license__ = "GPL v3"
 
 # Standard library modules.
+import os
 
 # Third party modules.
 
 # Local modules.
 from pymontecarlo.program.config import Program
+from pymontecarlo.settings import get_settings
 
 # Globals and constants variables.
 
 # Load submodules to register XML loader and saver
 
 class _PenelopeProgram(Program):
-    pass
+
+    def autoconfig(self, programs_path):
+        pendbase_path = os.path.join(programs_path, 'penelope', 'pendbase')
+        if not os.path.exists(pendbase_path):
+            return False
+
+        settings = get_settings()
+        settings.add_section(self.alias).pendbase = pendbase_path
+
+        return True
