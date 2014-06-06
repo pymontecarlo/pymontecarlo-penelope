@@ -23,7 +23,7 @@ import os
 import math
 import logging
 import warnings
-from operator import attrgetter, mul
+from operator import attrgetter, itemgetter, mul
 
 # Third party modules.
 #from pyxray.transition import get_transitions
@@ -42,6 +42,7 @@ from pymontecarlo.options.detector import \
     (_PhotonDelimitedDetector,
      PhotonSpectrumDetector,
      BackscatteredElectronEnergyDetector,
+     TransmittedElectronEnergyDetector,
      PhotonIntensityDetector,
      ElectronFractionDetector,
      TimeDetector,
@@ -281,13 +282,17 @@ class Exporter(_Exporter):
 
         #FIXME: Add emerging particle detectors
 
-        detectors = list(options.detectors.iterclass(BackscatteredElectronEnergyDetector))
+        detectors = []
+        detectors += list(options.detectors.iterclass(BackscatteredElectronEnergyDetector))
+        detectors += list(options.detectors.iterclass(TransmittedElectronEnergyDetector))
         if not detectors:
             lines.append(self._COMMENT_SKIP())
             return
 
-        detector = detectors[0][1]
-        text = detector.limits_eV[0], detector.limits_eV[1], detector.channels
+        lowlimit = min(map(itemgetter(0), map(attrgetter('limits_eV'), detectors)))
+        highlimit = max(map(itemgetter(1), map(attrgetter('limits_eV'), detectors)))
+        channels = max(map(attrgetter('channels'), detectors))
+        text = [lowlimit, highlimit, channels]
         line = self._KEYWORD_NBE(text)
         lines.append(line)
 

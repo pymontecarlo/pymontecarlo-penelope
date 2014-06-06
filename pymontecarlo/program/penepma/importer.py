@@ -37,11 +37,13 @@ from pymontecarlo.results.result import \
      TimeResult,
      ShowersStatisticsResult,
      BackscatteredElectronEnergyResult,
+     TransmittedElectronEnergyResult,
     )
 from pymontecarlo.options.detector import \
     (
      _PhotonDelimitedDetector,
      BackscatteredElectronEnergyDetector,
+     TransmittedElectronEnergyDetector,
      PhotonSpectrumDetector,
      PhotonIntensityDetector,
      ElectronFractionDetector,
@@ -86,6 +88,8 @@ class Importer(_Importer):
             self._import_showers_statistics
         self._importers[BackscatteredElectronEnergyDetector] = \
             self._import_backscattered_electron_energy
+        self._importers[TransmittedElectronEnergyDetector] = \
+            self._import_transmitted_electron_energy
 
     def _import(self, options, dirpath, *args, **kwargs):
         # Find index for each delimited detector
@@ -247,3 +251,14 @@ class Importer(_Importer):
         data = np.array([bins, vals, uncs]).T
 
         return BackscatteredElectronEnergyResult(data)
+
+    def _import_transmitted_electron_energy(self, options, key, detector, path, *args):
+        filepath = os.path.join(path, 'pe-energy-el-down.dat')
+        if not os.path.exists(filepath):
+            raise ImporterException("Data file %s cannot be found" % filepath)
+
+        # Load distributions
+        bins, vals, uncs = _load_dat_files(filepath)
+        data = np.array([bins, vals, uncs]).T
+
+        return TransmittedElectronEnergyResult(data)
