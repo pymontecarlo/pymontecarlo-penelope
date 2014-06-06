@@ -23,7 +23,6 @@ from pymontecarlo.options.options import Options
 from pymontecarlo.options.detector import \
     (PhotonSpectrumDetector,
      PhotonIntensityDetector,
-     PhotonDepthDetector,
      ElectronFractionDetector,
      TimeDetector,
      ShowersStatisticsDetector,
@@ -61,7 +60,7 @@ class TestImporter(TestCase):
         resultscontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        self.assertEqual(2, len(resultscontainer))
+#        self.assertEqual(2, len(resultscontainer))
 
         result = resultscontainer['xray2']
 
@@ -108,50 +107,8 @@ class TestImporter(TestCase):
         self.assertEqual(1000, len(background))
         self.assertAlmostEqual(10.0, background[0, 0], 4)
         self.assertAlmostEqual(19990.0, background[-1, 0], 4)
-        self.assertAlmostEqual(4.0148e-8, background[31, 1], 10)
-        self.assertAlmostEqual(1.6802574e-5, background[31, 2], 10)
-
-    def test_detector_phirhoz(self):
-        # Create
-        ops = Options(name='test1')
-        ops.beam.energy_eV = 20e3
-        ops.detectors['prz'] = \
-            PhotonDepthDetector((radians(35), radians(45)), (0, radians(360.0)), 500)
-
-        # Import
-        resultscontainer = self.i.import_(ops, self.testdata)
-
-        # Test
-        self.assertEqual(1, len(resultscontainer))
-
-        result = resultscontainer['prz']
-
-        self.assertTrue(result.exists('Al Ka1'))
-        self.assertTrue(result.exists('Fe Ka1'))
-
-        prz = result.get('Al Ka1')
-        self.assertEqual(249, len(prz))
-        self.assertAlmostEqual(0.0, prz[-1, 0], 4)
-        self.assertAlmostEqual(4.704016e-3, prz[-1, 1], 6)
-        self.assertAlmostEqual(7.06e-3, prz[-1, 2], 6)
-
-        prz = result.get('Al Ka1', absorption=False)
-        self.assertEqual(249, len(prz))
-        self.assertAlmostEqual(0.0, prz[-1, 0], 4)
-        self.assertAlmostEqual(3.910867e-3, prz[-1, 1], 6)
-        self.assertAlmostEqual(2.35e-3, prz[-1, 2], 6)
-
-        prz = result.get('Al Ka1', fluorescence=False)
-        self.assertEqual(249, len(prz))
-        self.assertAlmostEqual(0.0, prz[-1, 0], 4)
-        self.assertAlmostEqual(1.353710, prz[-1, 1], 6)
-        self.assertAlmostEqual(3.63e+1, prz[-1, 2], 6)
-
-        prz = result.get('Al Ka1', absorption=False, fluorescence=False)
-        self.assertEqual(249, len(prz))
-        self.assertAlmostEqual(0.0, prz[-1, 0], 4)
-        self.assertAlmostEqual(1.764721, prz[-1, 1], 6)
-        self.assertAlmostEqual(7.56e-1, prz[-1, 2], 6)
+        self.assertAlmostEqual(0.0, background[31, 1], 10)
+        self.assertAlmostEqual(0.0, background[31, 2], 10)
 
     def test_detector_electron_fraction(self):
         # Create
@@ -167,14 +124,14 @@ class TestImporter(TestCase):
 
         result = resultscontainer['fraction']
 
-        self.assertAlmostEqual(0.2336, result.backscattered[0], 4)
-        self.assertAlmostEqual(0.6713e-2, result.backscattered[1], 6)
+        self.assertAlmostEqual(0.5168187, result.backscattered[0], 4)
+        self.assertAlmostEqual(7.5e-3, result.backscattered[1], 6)
 
         self.assertAlmostEqual(0.0, result.transmitted[0], 4)
         self.assertAlmostEqual(0.0, result.transmitted[1], 4)
 
-        self.assertAlmostEqual(0.7759, result.absorbed[0], 4)
-        self.assertAlmostEqual(0.5447e-2, result.absorbed[1], 6)
+        self.assertAlmostEqual(0.5113858, result.absorbed[0], 4)
+        self.assertAlmostEqual(5.4e-3, result.absorbed[1], 6)
 
     def test_detector_time(self):
         # Create
@@ -190,8 +147,8 @@ class TestImporter(TestCase):
 
         result = resultscontainer['time']
 
-        self.assertAlmostEqual(0.3495e3, result.simulation_time_s, 4)
-        self.assertAlmostEqual(1.0 / 0.1508e3, result.simulation_speed_s[0], 4)
+        self.assertAlmostEqual(8.993401e1, result.simulation_time_s, 4)
+        self.assertAlmostEqual(1.0 / 8.554940e2, result.simulation_speed_s[0], 4)
 
     def test_detector_showers_statistics(self):
         # Create
@@ -207,7 +164,7 @@ class TestImporter(TestCase):
 
         result = resultscontainer['showers']
 
-        self.assertEqual(52730, result.showers)
+        self.assertEqual(76938, result.showers)
 
     def test_detector_backscattered_electron_energy(self):
         # Create
