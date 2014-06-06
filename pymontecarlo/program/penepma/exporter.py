@@ -26,7 +26,7 @@ import warnings
 from operator import attrgetter, mul
 
 # Third party modules.
-from pyxray.transition import get_transitions
+#from pyxray.transition import get_transitions
 
 # Local modules.
 from pymontecarlo.settings import get_settings
@@ -97,8 +97,7 @@ class Exporter(_Exporter):
     _KEYWORD_IFORCE = Keyword("IFORCE", "KB,KPAR,ICOL,FORCER,WLOW,WHIG")
 
     _KEYWORD_NBE = Keyword("NBE", "E-interval and no. of energy bins")
-    _KEYWORD_NBTH = Keyword("NBTH", "No. of bins for the polar angle THETA")
-    _KEYWORD_NBPH = Keyword("NBPH", "No. of bins for the azimuthal angle PHI")
+    _KEYWORD_NBANGL = Keyword("NBANGL", "Nos. of bins for the angles THETA and PHI")
 
     _KEYWORD_PDANGL = Keyword("PDANGL", "Angular window, in deg, IPSF")
     _KEYWORD_PDENER = Keyword("PDENER", "Energy window, no. of channels")
@@ -107,21 +106,17 @@ class Exporter(_Exporter):
     _KEYWORD_GRIDX = Keyword("GRIDX", "X coordinates of the box vertices")
     _KEYWORD_GRIDY = Keyword("GRIDY", "Y coordinates of the box vertices")
     _KEYWORD_GRIDZ = Keyword("GRIDZ", "Z coordinates of the box vertices")
-    _KEYWORD_GRIDBN = Keyword("GRIDBN", "Numbers of bins")
     _KEYWORD_XRAYE = Keyword("XRAYE", "Energy interval where x-rays are tallied")
-
-    _KEYWORD_PRZ = Keyword("PRZ", "prz for transition IZ,IS1,IS of detector IPD")
+    _KEYWORD_XRLINE = Keyword("XRLINE", "X-ray line, IZ*1e6+S1*1e4+S2*1e2")
 
     _KEYWORD_RESUME = Keyword("RESUME", "Resume from this dump file, 20 chars")
     _KEYWORD_DUMPTO = Keyword("DUMPTO", "Generate this dump file, 20 chars")
     _KEYWORD_DUMPP = Keyword("DUMPP", "Dumping period, in sec")
 
-    _KEYWORD_NSIMSH = Keyword("NSIMSH", "Desired number of simulated showers")
     _KEYWORD_RSEED = Keyword("RSEED", "Seeds of the random - number generator")
+    _KEYWORD_REFLIN = Keyword("REFLIN", "IZ*1e6+S1*1e4+S2*1e2,detector,tolerance")
+    _KEYWORD_NSIMSH = Keyword("NSIMSH", "Desired number of simulated showers")
     _KEYWORD_TIME = Keyword("TIME", "Allotted simulation time, in sec")
-    _KEYWORD_XLMTR = Keyword('XLMTR', "Transition(s) for uncertainty limit")
-    _KEYWORD_XLMPD = Keyword('XLMPD', "Photon detector for uncertainty limit")
-    _KEYWORD_XLMUNC = Keyword('XLMUNC', "Uncertainty limit on intensity")
 
     _COMMENT_SKIP = Comment('.')
     _COMMENT_ELECTROBEAM = Comment('>>>>>>>> Electron beam definition.')
@@ -130,8 +125,7 @@ class Exporter(_Exporter):
     _COMMENT_INTERACTION = Comment(">>>>>>>> Interaction forcing.")
     _COMMENT_EMERGINGDIST = Comment(">>>>>>>> Emerging particles. Energy and angular distributions.")
     _COMMENT_DETECTORS = Comment(">>>>>>>> Photon detectors.")
-    _COMMENT_SPATIALDIST = Comment(">>>>>>>> Spatial distribution of events.")
-    _COMMENT_PHIRHOZ = Comment(">>>>>>>> Phi rho z distributions.")
+    _COMMENT_SPATIALDIST = Comment(">>>>>>>> Spatial distribution of events in a box.")
     _COMMENT_JOBPROP = Comment(">>>>>>>> Job properties.")
 
     _KEYWORD_END = Keyword("END")
@@ -196,7 +190,7 @@ class Exporter(_Exporter):
         self._append_emerging_particles_distribution(*args)
         self._append_photon_detectors(*args)
         self._append_spatial_distribution(*args)
-        self._append_phirhoz_distribution(*args)
+#        self._append_phirhoz_distribution(*args)
         self._append_job_properties(*args)
 
         lines.append(self._KEYWORD_END())
@@ -366,69 +360,70 @@ class Exporter(_Exporter):
 
         lines.append(self._COMMENT_SKIP())
 
-    def _append_phirhoz_distribution(self, lines, options, geoinfo, matinfos,
-                                     phdets_key_index, phdets_index_keys, *args):
-        lines.append(self._COMMENT_PHIRHOZ())
+#    def _append_phirhoz_distribution(self, lines, options, geoinfo, matinfos,
+#                                     phdets_key_index, phdets_index_keys, *args):
+#        lines.append(self._COMMENT_PHIRHOZ())
+#
+#        detectors = dict(options.detectors.iterclass(PhotonDepthDetector))
+#        if not detectors:
+#            lines.append(self._COMMENT_SKIP())
+#            return
+#
+#        # Check number of prz
+#        if len(detectors) > MAX_PRZ:
+#            raise ExporterException('PENEPMA can only have %i phi-rho-z. %i are defined.' % \
+#                                    (MAX_PRZ, len(detectors)))
+#
+#        # Retrieve all elements inside the geometry
+#        materials = options.geometry.get_materials()
+#
+#        zs = set()
+#        for material in materials:
+#            zs |= set(material.composition.keys())
+#
+#        # Retrieve all transitions above a certain probability
+#        energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
+#        energyhigh = options.beam.energy_eV
+#
+#        transitions = []
+#        for z in zs:
+#            transitions += filter(lambda t: t.probability > 1e-2,
+#                                  get_transitions(z, energylow, energyhigh))
+#
+#        transitions.sort(key=attrgetter('probability'), reverse=True)
+#
+#        if not transitions:
+#            message = "No transition found for PRZ distribution with high enough probability"
+#            warnings.warn(message, ExporterWarning)
+#
+#        # Restrain number of transitions to maximum number of PRZ
+#        if len(detectors) * len(transitions) > MAX_PRZ:
+#            message = 'Too many transitions (%i) for the number of detectors (%i). Only the most probable is/are kept.' % \
+#                          (len(transitions), len(detectors))
+#            warnings.warn(message, ExporterWarning)
+#
+#            n = int(MAX_PRZ / len(detectors)) # >= 1
+#            transitions = transitions[:n]
+#
+#        logging.debug('PRZ of the following transitions: %s',
+#                      ', '.join(map(str, transitions)))
+#
+#        # Create lines
+#        for key in detectors.keys():
+#            index = phdets_key_index[key] + 1
+#
+#            for transition in transitions:
+#                text = (transition.z, transition.dest.index,
+#                        transition.src.index, index)
+#                lines.append(self._KEYWORD_PRZ(text))
+#
+#            message = "PENEPMA does not support a specific number of slices for the PRZ"
+#            warnings.warn(message, ExporterWarning)
+#
+#        lines.append(self._COMMENT_SKIP())
 
-        detectors = dict(options.detectors.iterclass(PhotonDepthDetector))
-        if not detectors:
-            lines.append(self._COMMENT_SKIP())
-            return
-
-        # Check number of prz
-        if len(detectors) > MAX_PRZ:
-            raise ExporterException('PENEPMA can only have %i phi-rho-z. %i are defined.' % \
-                                    (MAX_PRZ, len(detectors)))
-
-        # Retrieve all elements inside the geometry
-        materials = options.geometry.get_materials()
-
-        zs = set()
-        for material in materials:
-            zs |= set(material.composition.keys())
-
-        # Retrieve all transitions above a certain probability
-        energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
-        energyhigh = options.beam.energy_eV
-
-        transitions = []
-        for z in zs:
-            transitions += filter(lambda t: t.probability > 1e-2,
-                                  get_transitions(z, energylow, energyhigh))
-
-        transitions.sort(key=attrgetter('probability'), reverse=True)
-
-        if not transitions:
-            message = "No transition found for PRZ distribution with high enough probability"
-            warnings.warn(message, ExporterWarning)
-
-        # Restrain number of transitions to maximum number of PRZ
-        if len(detectors) * len(transitions) > MAX_PRZ:
-            message = 'Too many transitions (%i) for the number of detectors (%i). Only the most probable is/are kept.' % \
-                          (len(transitions), len(detectors))
-            warnings.warn(message, ExporterWarning)
-
-            n = int(MAX_PRZ / len(detectors)) # >= 1
-            transitions = transitions[:n]
-
-        logging.debug('PRZ of the following transitions: %s',
-                      ', '.join(map(str, transitions)))
-
-        # Create lines
-        for key in detectors.keys():
-            index = phdets_key_index[key] + 1
-
-            for transition in transitions:
-                text = (transition.z, transition.dest.index,
-                        transition.src.index, index)
-                lines.append(self._KEYWORD_PRZ(text))
-
-            message = "PENEPMA does not support a specific number of slices for the PRZ"
-            warnings.warn(message, ExporterWarning)
-
-        lines.append(self._COMMENT_SKIP())
-
-    def _append_job_properties(self, lines, options, geoinfo, matinfos, *args):
+    def _append_job_properties(self, lines, options, geoinfo, matinfos,
+                               phdets_key_index, phdets_index_keys, *args):
         lines.append(self._COMMENT_JOBPROP())
 
         text = 'dump.dat'
@@ -445,33 +440,32 @@ class Exporter(_Exporter):
 
         lines.append(self._COMMENT_SKIP())
 
+        #NOTE: No random number. PENEPMA will select them.
+
+        limits = list(options.limits.iterclass(UncertaintyLimit))
+        if limits:
+            limit = limits[0]
+            transition = limit.transition
+            detector = phdets_key_index[limit.detector_key]
+            uncertainty = limit.uncertainty
+
+            code = int(transition.z * 1e6 + \
+                       transition.dest.index * 1e4 + \
+                       transition.src.index * 1e2)
+            text = [code, detector, uncertainty]
+            line = self._KEYWORD_REFLIN(text)
+            lines.append(line)
+
         limits = list(options.limits.iterclass(ShowersLimit))
         showers = limits[0].showers if limits else 1e38
         text = '%e' % showers
         line = self._KEYWORD_NSIMSH(text)
         lines.append(line)
 
-        #NOTE: No random number. PENEPMA will select them.
-
         limits = list(options.limits.iterclass(TimeLimit))
         time_s = limits[0].time_s if limits else 1e38
         text = '%e' % time_s
         line = self._KEYWORD_TIME(text)
         lines.append(line)
-
-        limits = list(options.limits.iterclass(UncertaintyLimit))
-        if limits:
-            for transition in limits[0].transitions:
-                text = [transition.z, transition.dest.index, transition.src.index]
-                line = self._KEYWORD_XLMTR(text)
-                lines.append(line)
-
-            text = [-1] # FIXME: Specify detector for uncertainty
-            line = self._KEYWORD_XLMPD(text)
-            lines.append(line)
-
-            text = [limits[0].uncertainty, 0.0]
-            line = self._KEYWORD_XLMUNC(text)
-            lines.append(line)
 
         lines.append(self._COMMENT_SKIP())

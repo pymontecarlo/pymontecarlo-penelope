@@ -16,6 +16,7 @@ import shutil
 from math import radians
 
 # Third party modules.
+from pyxray.transition import Transition
 
 # Local modules.
 from pymontecarlo.testcase import TestCase
@@ -23,7 +24,7 @@ from pymontecarlo.testcase import TestCase
 from pymontecarlo.options.particle import ELECTRON
 from pymontecarlo.options.collision import HARD_ELASTIC
 from pymontecarlo.options.options import Options
-from pymontecarlo.options.limit import TimeLimit
+from pymontecarlo.options.limit import TimeLimit, UncertaintyLimit
 from pymontecarlo.options.detector import \
     (PhotonIntensityDetector, PhotonSpectrumDetector, PhotonDepthDetector,
      TimeDetector)
@@ -33,8 +34,7 @@ from pymontecarlo.program._penelope.options.material import \
 from pymontecarlo.program.penepma.exporter import Exporter, ExporterException
 
 # Globals and constants variables.
-from pymontecarlo.program.penepma.exporter import \
-    MAX_PHOTON_DETECTORS, MAX_PRZ
+from pymontecarlo.program.penepma.exporter import MAX_PHOTON_DETECTORS
 
 class TestPenelopeExporter(TestCase):
 
@@ -61,6 +61,7 @@ class TestPenelopeExporter(TestCase):
         ops.detectors['prz'] = \
             PhotonDepthDetector((radians(0), radians(90)), (0, radians(360.0)), 500)
         ops.limits.add(TimeLimit(100))
+        ops.limits.add(UncertaintyLimit(Transition(29, siegbahn='Ka1'), 'x-ray', 0.05))
 
         # Export
         opss = self.c.convert(ops)
@@ -102,17 +103,17 @@ class TestPenelopeExporter(TestCase):
 
         self.e.export(opss[0], self.tmpdir)
 
-    def test_append_phirhoz_distribution_maxlimit(self):
-        ops = Options()
-        ops.beam.energy_eV = 30e3
-        ops.limits.add(TimeLimit(100))
-
-        for i in range(MAX_PRZ + 1):
-            ops.detectors['det%i' % i] = \
-                PhotonDepthDetector((radians(i), radians(45)), (0, radians(360.0)), 500)
-
-        opss = self.c.convert(ops)
-        self.assertRaises(ExporterException, self.e.export, opss[0], self.tmpdir)
+#    def test_append_phirhoz_distribution_maxlimit(self):
+#        ops = Options()
+#        ops.beam.energy_eV = 30e3
+#        ops.limits.add(TimeLimit(100))
+#
+#        for i in range(MAX_PRZ + 1):
+#            ops.detectors['det%i' % i] = \
+#                PhotonDepthDetector((radians(i), radians(45)), (0, radians(360.0)), 500)
+#
+#        opss = self.c.convert(ops)
+#        self.assertRaises(ExporterException, self.e.export, opss[0], self.tmpdir)
 
     def test_append_phirhoz_distribution_restrain_transitions(self):
         ops = Options()
