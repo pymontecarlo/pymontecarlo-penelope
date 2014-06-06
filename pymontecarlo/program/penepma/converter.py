@@ -30,7 +30,6 @@ from pymontecarlo.options.beam import GaussianBeam, PencilBeam
 from pymontecarlo.options.limit import TimeLimit, ShowersLimit, UncertaintyLimit
 from pymontecarlo.options.detector import \
     (BackscatteredElectronEnergyDetector,
-     PhotonDepthDetector,
      PhotonIntensityDetector,
      PhotonSpectrumDetector,
      ElectronFractionDetector,
@@ -47,7 +46,6 @@ class Converter(_Converter):
     PARTICLES = [ELECTRON]
     BEAMS = [GaussianBeam]
     DETECTORS = [BackscatteredElectronEnergyDetector,
-                 PhotonDepthDetector,
                  PhotonSpectrumDetector,
                  PhotonIntensityDetector,
                  ElectronFractionDetector,
