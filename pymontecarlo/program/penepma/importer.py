@@ -238,7 +238,7 @@ class Importer(_Importer):
         return ShowersStatisticsResult(showers)
 
     def _import_backscattered_electron_energy(self, options, key, detector, path, *args):
-        filepath = os.path.join(path, 'pe-energy-el-back.dat')
+        filepath = os.path.join(path, 'pe-energy-el-up.dat')
         if not os.path.exists(filepath):
             raise ImporterException("Data file %s cannot be found" % filepath)
 
