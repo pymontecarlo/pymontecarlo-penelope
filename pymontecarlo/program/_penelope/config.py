@@ -18,6 +18,7 @@ __license__ = "GPL v3"
 
 # Standard library modules.
 import os
+import sys
 
 # Third party modules.
 
@@ -32,9 +33,14 @@ from pymontecarlo.settings import get_settings
 class _PenelopeProgram(Program):
 
     def autoconfig(self, programs_path):
-        pendbase_path = os.path.join(programs_path, 'penelope', 'pendbase')
-        if not os.path.exists(pendbase_path):
-            return False
+        if sys.platform == 'linux':
+            pendbase_path = '/usr/share/penelope-pendbase'
+            if not os.path.exists(pendbase_path):
+                return False
+        else:
+            pendbase_path = os.path.join(programs_path, 'penelope', 'pendbase')
+            if not os.path.exists(pendbase_path):
+                return False
 
         settings = get_settings()
         settings.add_section(self.alias).pendbase = pendbase_path
