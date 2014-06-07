@@ -59,7 +59,7 @@ class Worker(_Worker):
 
         # Import results to pyMonteCarlo
         self._status = 'Importing results'
-        results = self._importer.import_(options, workdir)
+        results = self.import_(options, workdir)
 
         # Create ZIP with all results
         zipfilepath = os.path.join(outputdir, options.name + '.zip')
