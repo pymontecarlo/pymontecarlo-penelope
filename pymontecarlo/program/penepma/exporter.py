@@ -143,6 +143,7 @@ class Exporter(_Exporter):
         self._beam_exporters[GaussianBeam] = self._export_dummy
 
         self._detector_exporters[BackscatteredElectronEnergyDetector] = self._export_dummy
+        self._detector_exporters[TransmittedElectronEnergyDetector] = self._export_dummy
         self._detector_exporters[PhotonSpectrumDetector] = self._export_dummy
         self._detector_exporters[PhotonIntensityDetector] = self._export_dummy
         self._detector_exporters[ElectronFractionDetector] = self._export_dummy
