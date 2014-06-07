@@ -62,7 +62,7 @@ class _PenepmaProgram(_PenelopeProgram):
         if not _PenelopeProgram.autoconfig(self, programs_path):
             return False
 
-        exe_path = os.path.join(programs_path, self.alias, 'penepma.exe')
+        exe_path = os.path.join(programs_path, self.alias, 'bin', 'penepma.exe')
         if not os.path.exists(exe_path):
             return False
 
