@@ -14,15 +14,6 @@ from setuptools import setup, find_packages
 
 # Local modules.
 from pymontecarlo.util.dist.command import clean
-try:
-    from pymontecarlo.program._penelope.util.dist.command import \
-    bdist_deb_pendbase, bdist_deb_material
-    from pymontecarlo.program.penepma.util.dist.command import \
-        bdist_deb_penepma
-except ImportError:
-    bdist_deb_pendbase = None
-    bdist_deb_material = None
-    bdist_deb_penepma = None
 
 # Globals and constants variables.
 
@@ -46,10 +37,7 @@ setup(name="pyMonteCarlo-PENELOPE",
 
       install_requires=['pypenelopelib', 'pyMonteCarlo'],
 
-      cmdclass={'clean': clean,
-                'bdist_deb_pendbase': bdist_deb_pendbase,
-                'bdist_deb_material': bdist_deb_material,
-                'bdist_deb_penepma': bdist_deb_penepma},
+      cmdclass={'clean': clean},
 
       entry_points={'pymontecarlo.program':
                         ['penepma=pymontecarlo.program.penepma.config:program',
