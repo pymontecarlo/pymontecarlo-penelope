@@ -19,6 +19,7 @@ __license__ = "GPL v3"
 # Standard library modules.
 import os
 import sys
+import glob
 
 # Third party modules.
 
@@ -66,9 +67,10 @@ class _PenepmaProgram(_PenelopeProgram):
         if sys.platform == 'linux':
             exe_path = '/usr/bin/penepma'
         else:
-            exe_path = os.path.join(programs_path, self.alias, 'bin', 'penepma.exe')
-            if not os.path.exists(exe_path):
+            paths = glob.glob(os.path.join(programs_path, self.alias, 'bin', 'penepma'))
+            if len(paths) != 1:
                 return False
+            exe_path = paths[0]
 
         settings = get_settings()
         settings.add_section('penepma').exe = exe_path

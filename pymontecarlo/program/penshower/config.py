@@ -19,6 +19,7 @@ __license__ = "GPL v3"
 # Standard library modules.
 import os
 import sys
+import glob
 
 # Third party modules.
 
@@ -68,9 +69,10 @@ class _PenshowerProgram(_PenelopeProgram):
             if not os.path.exists(exe_path):
                 return False
         else:
-            exe_path = os.path.join(programs_path, self.alias, 'penshower.exe')
-            if not os.path.exists(exe_path):
+            paths = glob.glob(os.path.join(programs_path, self.alias, 'bin', 'penshower'))
+            if len(paths) != 1:
                 return False
+            exe_path = paths[0]
 
         settings = get_settings()
         settings.add_section('penshower').exe = exe_path
