@@ -194,6 +194,17 @@ class PenelopeMaterial(_Material):
                    interaction_forcings, maximum_step_length_m)
 
     @classmethod
+    def from_formula(cls, formula, density_kg_m3=None, absorption_energy_eV=None,
+                     elastic_scattering=(0.0, 0.0),
+                     cutoff_energy_inelastic_eV=50.0,
+                     cutoff_energy_bremsstrahlung_eV=50.0,
+                     interaction_forcings=None, maximum_step_length_m=1e20):
+        mat = _Material.from_formula(formula, density_kg_m3, absorption_energy_eV)
+        return cls(mat.composition, mat.name, mat.density_kg_m3, mat.absorption_energy_eV,
+                   elastic_scattering, cutoff_energy_inelastic_eV, cutoff_energy_bremsstrahlung_eV,
+                   interaction_forcings, maximum_step_length_m)
+
+    @classmethod
     def from_material(cls, mat, elastic_scattering=(0.0, 0.0),
                       cutoff_energy_inelastic_eV=50.0, cutoff_energy_bremsstrahlung_eV=50.0,
                       interaction_forcings=None, maximum_step_length_m=1e20):
