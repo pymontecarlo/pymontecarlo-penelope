@@ -450,7 +450,7 @@ class Exporter(_Exporter):
         if limits:
             limit = limits[0]
             transition = limit.transition
-            detector = phdets_key_index[limit.detector_key]
+            detector = phdets_key_index[limit.detector_key] + 1
             uncertainty = limit.uncertainty
 
             code = int(transition.z * 1e6 + \
