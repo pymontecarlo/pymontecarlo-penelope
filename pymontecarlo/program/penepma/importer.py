@@ -203,7 +203,7 @@ class Importer(_Importer):
             with open(filepath, 'r') as fp:
                 next(fp) # Skip first line
                 text = next(fp).split(':')[1].strip()
-                match = re.match('Z = ([ \d]+),(\w+)-(\w+), detector = ([ \d]+)', text)
+                match = re.match('Z = ([ \d]+),([ \w]+)-([ \w]+), detector = ([ \d]+)', text)
                 z, dest, src, detector_index = match.groups()
 
                 z = int(z)
