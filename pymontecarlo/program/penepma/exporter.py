@@ -26,7 +26,7 @@ import warnings
 from operator import attrgetter, itemgetter, mul
 
 # Third party modules.
-#from pyxray.transition import get_transitions
+from pyxray.transition import get_transitions
 
 # Local modules.
 from pymontecarlo.settings import get_settings
@@ -46,7 +46,8 @@ from pymontecarlo.options.detector import \
      PhotonIntensityDetector,
      ElectronFractionDetector,
      TimeDetector,
-     ShowersStatisticsDetector,)
+     ShowersStatisticsDetector,
+     PhotonDepthDetector)
 from pymontecarlo.options.limit import ShowersLimit, TimeLimit, UncertaintyLimit
 from pymontecarlo.options.beam import GaussianBeam
 
@@ -58,7 +59,7 @@ from pypenelopelib.material import MaterialInfo
 
 # Globals and constants variables.
 MAX_PHOTON_DETECTORS = 25 # Set in penepma.f
-MAX_PRZ = 20 # Set in penepma.f
+MAX_SPATIAL_DISTRIBUTION = 10 # Set in penepma.f
 MAX_PHOTON_DETECTOR_CHANNEL = 1000
 
 _PARTICLES_REF = {ELECTRON: 1, PHOTON: 2, POSITRON: 3}
@@ -146,6 +147,7 @@ class Exporter(_Exporter):
         self._detector_exporters[TransmittedElectronEnergyDetector] = self._export_dummy
         self._detector_exporters[PhotonSpectrumDetector] = self._export_dummy
         self._detector_exporters[PhotonIntensityDetector] = self._export_dummy
+        self._detector_exporters[PhotonDepthDetector] = self._export_dummy
         self._detector_exporters[ElectronFractionDetector] = self._export_dummy
         self._detector_exporters[TimeDetector] = self._export_dummy
         self._detector_exporters[ShowersStatisticsDetector] = self._export_dummy
@@ -357,74 +359,91 @@ class Exporter(_Exporter):
 
             lines.append(self._COMMENT_SKIP())
 
-    def _append_spatial_distribution(self, lines, options, geoinfo, matinfos, *args):
+    def _append_spatial_distribution(self, lines, options, geoinfo, matinfos,
+                                     phdets_key_index, phdets_index_keys, *args):
         lines.append(self._COMMENT_SPATIALDIST())
 
-        #FIXME: Add spatial distribution
+        # Photon depth detectors
+        detectors = dict(options.detectors.iterclass(PhotonDepthDetector))
+        if not detectors:
+            lines.append(self._COMMENT_SKIP())
+            return
 
-        lines.append(self._COMMENT_SKIP())
+        if len(detectors) != 1:
+            raise ExporterException("PENEPMA can only have one photon depth detector")
 
-#    def _append_phirhoz_distribution(self, lines, options, geoinfo, matinfos,
-#                                     phdets_key_index, phdets_index_keys, *args):
-#        lines.append(self._COMMENT_PHIRHOZ())
-#
-#        detectors = dict(options.detectors.iterclass(PhotonDepthDetector))
-#        if not detectors:
-#            lines.append(self._COMMENT_SKIP())
-#            return
-#
-#        # Check number of prz
-#        if len(detectors) > MAX_PRZ:
-#            raise ExporterException('PENEPMA can only have %i phi-rho-z. %i are defined.' % \
-#                                    (MAX_PRZ, len(detectors)))
-#
-#        # Retrieve all elements inside the geometry
-#        materials = options.geometry.get_materials()
-#
-#        zs = set()
-#        for material in materials:
-#            zs |= set(material.composition.keys())
-#
-#        # Retrieve all transitions above a certain probability
-#        energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
-#        energyhigh = options.beam.energy_eV
-#
-#        transitions = []
-#        for z in zs:
+        ## Retrieve all elements inside the geometry
+        materials = options.geometry.get_materials()
+
+        zs = set()
+        for material in materials:
+            zs |= set(material.composition.keys())
+
+        ## Retrieve all transitions above a certain probability
+        energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
+        energyhigh = options.beam.energy_eV
+
+        transitions = []
+        for z in zs:
+            transitions += get_transitions(z, energylow, energyhigh)
 #            transitions += filter(lambda t: t.probability > 1e-2,
 #                                  get_transitions(z, energylow, energyhigh))
-#
-#        transitions.sort(key=attrgetter('probability'), reverse=True)
-#
-#        if not transitions:
-#            message = "No transition found for PRZ distribution with high enough probability"
-#            warnings.warn(message, ExporterWarning)
-#
-#        # Restrain number of transitions to maximum number of PRZ
-#        if len(detectors) * len(transitions) > MAX_PRZ:
-#            message = 'Too many transitions (%i) for the number of detectors (%i). Only the most probable is/are kept.' % \
-#                          (len(transitions), len(detectors))
-#            warnings.warn(message, ExporterWarning)
-#
-#            n = int(MAX_PRZ / len(detectors)) # >= 1
-#            transitions = transitions[:n]
-#
-#        logging.debug('PRZ of the following transitions: %s',
-#                      ', '.join(map(str, transitions)))
-#
-#        # Create lines
-#        for key in detectors.keys():
-#            index = phdets_key_index[key] + 1
-#
-#            for transition in transitions:
-#                text = (transition.z, transition.dest.index,
-#                        transition.src.index, index)
-#                lines.append(self._KEYWORD_PRZ(text))
-#
-#            message = "PENEPMA does not support a specific number of slices for the PRZ"
-#            warnings.warn(message, ExporterWarning)
-#
-#        lines.append(self._COMMENT_SKIP())
+
+        transitions.sort(key=attrgetter('probability'), reverse=True)
+
+        if not transitions:
+            message = "No transition found for PRZ distribution with high enough probability"
+            warnings.warn(message, ExporterWarning)
+
+        ## Restrain number of transitions to maximum number of PRZ
+        if len(transitions) > MAX_SPATIAL_DISTRIBUTION // 2:
+            message = 'Too many transitions (%i). Only the most probable is/are kept.' % \
+                          len(transitions)
+            warnings.warn(message, ExporterWarning)
+
+            transitions = transitions[:MAX_SPATIAL_DISTRIBUTION // 2]
+
+        logging.debug('PRZ of the following transitions: %s',
+                      ', '.join(map(str, transitions)))
+
+        ## Retrieve range
+        matinfos = dict(matinfos)
+
+        zmax_m = 1e-08 # PENPEMA forces the minimum depth to be 1e-6 cm
+        for material in materials:
+            matfilepath = matinfos[material]
+            matinfo = MaterialInfo(matfilepath)
+
+            e0 = options.beam.energy_eV
+            zmax_m = max(zmax_m, matinfo.range_m(e0, _PARTICLES_REF[PHOTON]))
+
+        ## Create lines
+        key, detector = next(iter(detectors.items()))
+
+        text = ' '.join(map(str, [-3, 3, 1]))
+        lines.append(self._KEYWORD_GRIDX(text))
+
+        text = ' '.join(map(str, [-3, 3, 1]))
+        lines.append(self._KEYWORD_GRIDY(text))
+
+        channels = min(100, detector.channels) # Maximum of 100 channels
+        text = ' '.join(map(str, [-zmax_m * 1e2, 0, channels]))
+        lines.append(self._KEYWORD_GRIDZ(text))
+
+        index = phdets_key_index[key] + 1
+
+        for transition in transitions:
+            code = int(transition.z * 1e6 + \
+                   transition.dest.index * 1e4 + \
+                   transition.src.index * 1e2)
+
+            text = ' '.join(map(str, [code, 0])) # No absorption
+            lines.append(self._KEYWORD_XRLINE(text))
+
+            text = ' '.join(map(str, [code, index])) # With absorption
+            lines.append(self._KEYWORD_XRLINE(text))
+
+        lines.append(self._COMMENT_SKIP())
 
     def _append_job_properties(self, lines, options, geoinfo, matinfos,
                                phdets_key_index, phdets_index_keys, *args):

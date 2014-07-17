@@ -54,6 +54,7 @@ class TestPenelopeExporter(TestCase):
         # Create
         ops = Options(name='test1')
         ops.beam.energy_eV = 30e3
+        ops.geometry.body.material = PenelopeMaterial.pure(29)
         ops.detectors['x-ray'] = \
             PhotonIntensityDetector((radians(35), radians(45)), (0, radians(360.0)))
         ops.detectors['spectrum'] = \

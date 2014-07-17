@@ -33,6 +33,7 @@ from pymontecarlo.options.detector import \
      TransmittedElectronEnergyDetector,
      PhotonIntensityDetector,
      PhotonSpectrumDetector,
+     PhotonDepthDetector,
      ElectronFractionDetector,
      TimeDetector,
      ShowersStatisticsDetector,
@@ -50,6 +51,7 @@ class Converter(_Converter):
                  TransmittedElectronEnergyDetector,
                  PhotonSpectrumDetector,
                  PhotonIntensityDetector,
+                 PhotonDepthDetector,
                  ElectronFractionDetector,
                  TimeDetector,
                  ShowersStatisticsDetector,
@@ -69,7 +71,7 @@ class Converter(_Converter):
         _Converter.__init__(self, elastic_scattering, cutoff_energy_inelastic,
                             cutoff_energy_bremsstrahlung)
 
-        dets = [BackscatteredElectronEnergyDetector]
+        dets = [BackscatteredElectronEnergyDetector, PhotonDepthDetector]
         self._expander = OptionsExpanderSingleDetector(dets)
 
     def _convert_beam(self, options):

@@ -23,6 +23,7 @@ from pymontecarlo.options.options import Options
 from pymontecarlo.options.detector import \
     (PhotonSpectrumDetector,
      PhotonIntensityDetector,
+     PhotonDepthDetector,
      ElectronFractionDetector,
      TimeDetector,
      ShowersStatisticsDetector,
@@ -110,6 +111,35 @@ class TestImporter(TestCase):
         self.assertAlmostEqual(19990.0, background[-1, 0], 4)
         self.assertAlmostEqual(0.0, background[31, 1], 10)
         self.assertAlmostEqual(0.0, background[31, 2], 10)
+
+    def test_detector_photon_depth(self):
+        # Create
+        ops = Options(name='test1')
+        ops.beam.energy_eV = 20e3
+        ops.detectors['prz'] = \
+            PhotonDepthDetector((radians(35), radians(45)), (0, radians(360.0)), 100)
+
+        # Import
+        resultscontainer = self.i.import_(ops, self.testdata)
+
+        # Test
+        self.assertEqual(1, len(resultscontainer))
+
+        result = resultscontainer['prz']
+
+        self.assertTrue(result.exists('Cu La1', absorption=True))
+        self.assertTrue(result.exists('Cu La1', absorption=False))
+        self.assertFalse(result.exists('Cu Ka1', absorption=True))
+
+        dist = result.get('Cu La1', absorption=False)
+        self.assertAlmostEqual(-5.750000e-7, dist[2, 0], 4)
+        self.assertAlmostEqual(4.737908e-6, dist[2, 1], 4)
+        self.assertAlmostEqual(1.005021e-5, dist[2, 2], 4)
+
+        dist = result.get('Cu La1', absorption=True)
+        self.assertAlmostEqual(-5.150000e-7, dist[8, 0], 4)
+        self.assertAlmostEqual(4.228566e-5, dist[8, 1], 4)
+        self.assertAlmostEqual(1.268544e-4, dist[8, 2], 4)
 
     def test_detector_electron_fraction(self):
         # Create

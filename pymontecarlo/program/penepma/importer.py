@@ -21,6 +21,7 @@ __license__ = "GPL v3"
 # Standard library modules.
 import os
 import re
+import glob
 
 # Third party modules.
 import numpy as np
@@ -33,6 +34,7 @@ from pymontecarlo.results.result import \
     (PhotonKey,
      PhotonIntensityResult,
      PhotonSpectrumResult,
+     PhotonDepthResult,
      ElectronFractionResult,
      TimeResult,
      ShowersStatisticsResult,
@@ -46,6 +48,7 @@ from pymontecarlo.options.detector import \
      TransmittedElectronEnergyDetector,
      PhotonSpectrumDetector,
      PhotonIntensityDetector,
+     PhotonDepthDetector,
      ElectronFractionDetector,
      TimeDetector,
      ShowersStatisticsDetector,
@@ -90,6 +93,8 @@ class Importer(_Importer):
             self._import_backscattered_electron_energy
         self._importers[TransmittedElectronEnergyDetector] = \
             self._import_transmitted_electron_energy
+        self._importers[PhotonDepthDetector] = \
+            self._import_photon_depth
 
     def _import(self, options, dirpath, *args, **kwargs):
         # Find index for each delimited detector
@@ -188,6 +193,38 @@ class Importer(_Importer):
                 intensities[PhotonKey(transition, True, PhotonKey.T)] = et
 
         return PhotonIntensityResult(intensities)
+
+    def _import_photon_depth(self, options, key, detector, path,
+                             phdets_key_index, phdets_index_keys, *args):
+        distributions = {}
+
+        for filepath in glob.glob(os.path.join(path, 'pe-map-*-depth.dat')):
+            # Create photon key
+            with open(filepath, 'r') as fp:
+                next(fp) # Skip first line
+                text = next(fp).split(':')[1].strip()
+                match = re.match('Z = ([ \d]+),(\w+)-(\w+), detector = ([ \d]+)', text)
+                z, dest, src, detector_index = match.groups()
+
+                z = int(z)
+                src = Subshell(z, iupac=src)
+                dest = Subshell(z, iupac=dest)
+                transition = Transition(z, src, dest)
+
+                detector_index = int(detector_index)
+                if detector_index == 0:
+                    photonkey = PhotonKey(transition, False, PhotonKey.T)
+                else:
+                    assert detector_index == phdets_key_index[key] + 1
+                    photonkey = PhotonKey(transition, True, PhotonKey.T)
+
+            # Read values
+            datum = np.genfromtxt(filepath, skip_header=6)
+            datum *= 1e-2 # cm to m
+
+            distributions[photonkey] = datum
+
+        return PhotonDepthResult(distributions)
 
     def _read_log(self, path):
         """

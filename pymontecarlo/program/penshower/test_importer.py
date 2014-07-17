@@ -50,10 +50,10 @@ class TestImporter(TestCase):
         ops.detectors['trajectories'] = TrajectoryDetector(50)
 
         # Import
-        results = self.i.import_(ops, self.testdata)[0]
+        resultcontainer = self.i.import_(ops, self.testdata)
 
         # Test
-        result = results['trajectories']
+        result = resultcontainer['trajectories']
         self.assertEqual(559, len(result))
 
         trajectory = list(result)[0]
