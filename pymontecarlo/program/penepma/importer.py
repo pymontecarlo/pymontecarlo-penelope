@@ -207,8 +207,8 @@ class Importer(_Importer):
                 z, dest, src, detector_index = match.groups()
 
                 z = int(z)
-                src = Subshell(z, iupac=src)
-                dest = Subshell(z, iupac=dest)
+                src = Subshell(z, iupac=src.strip())
+                dest = Subshell(z, iupac=dest.strip())
                 transition = Transition(z, src, dest)
 
                 detector_index = int(detector_index)
