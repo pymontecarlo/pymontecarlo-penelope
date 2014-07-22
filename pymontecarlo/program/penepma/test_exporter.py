@@ -91,43 +91,19 @@ class TestPenelopeExporter(TestCase):
 
         self.e.export(opss[0], self.tmpdir)
 
-#    def test_append_phirhoz_distribution_channels(self):
-#        ops = Options()
-#        ops.beam.energy_eV = 30e3
-#        ops.limits.add(TimeLimit(100))
-#        ops.detectors['prz1'] = \
-#            PhotonDepthDetector((radians(35), radians(45)), (0, radians(360.0)), 500)
-#        ops.detectors['prz2'] = \
-#            PhotonDepthDetector((radians(35), radians(45)), (0, radians(360.0)), 500)
-#
-#        opss = self.c.convert(ops)
-#
-#        self.e.export(opss[0], self.tmpdir)
+    def test_photon_depth_detector(self):
+        # Create
+        ops = Options(name='test1')
+        ops.beam.energy_eV = 30e3
+        ops.geometry.body.material = PenelopeMaterial.pure(29)
+        ops.detectors['prz'] = \
+            PhotonDepthDetector((radians(0), radians(90)), (0, radians(360.0)),
+                                500, [Transition(29, siegbahn='Ka1')])
+        ops.limits.add(TimeLimit(100))
 
-#    def test_append_phirhoz_distribution_maxlimit(self):
-#        ops = Options()
-#        ops.beam.energy_eV = 30e3
-#        ops.limits.add(TimeLimit(100))
-#
-#        for i in range(MAX_PRZ + 1):
-#            ops.detectors['det%i' % i] = \
-#                PhotonDepthDetector((radians(i), radians(45)), (0, radians(360.0)), 500)
-#
-#        opss = self.c.convert(ops)
-#        self.assertRaises(ExporterException, self.e.export, opss[0], self.tmpdir)
-
-#    def test_append_phirhoz_distribution_restrain_transitions(self):
-#        ops = Options()
-#        ops.beam.energy_eV = 30e3
-#        ops.limits.add(TimeLimit(100))
-#
-#        for i in range(10):
-#            ops.detectors['det%i' % i] = \
-#                PhotonDepthDetector((radians(i), radians(45)), (0, radians(360.0)), 500)
-#
-#        opss = self.c.convert(ops)
-#
-#        self.e.export(opss[0], self.tmpdir)
+        # Export
+        opss = self.c.convert(ops)
+        self.e.export(opss[0], self.tmpdir)
 
     def testinteraction_forcing(self):
         ops = Options()

@@ -372,28 +372,31 @@ class Exporter(_Exporter):
         if len(detectors) != 1:
             raise ExporterException("PENEPMA can only have one photon depth detector")
 
-        ## Retrieve all elements inside the geometry
+        key, detector = next(iter(detectors.items()))
+
+        ## Get materials
         materials = options.geometry.get_materials()
 
-        zs = set()
-        for material in materials:
-            zs |= set(material.composition.keys())
+        ## Get transitions
+        if not detector.transitions:
+            zs = set()
+            for material in materials:
+                zs |= set(material.composition.keys())
 
-        ## Retrieve all transitions above a certain probability
-        energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
-        energyhigh = options.beam.energy_eV
+            energylow = min(mat.absorption_energy_eV[ELECTRON] for mat in materials)
+            energyhigh = options.beam.energy_eV
 
-        transitions = []
-        for z in zs:
-            transitions += get_transitions(z, energylow, energyhigh)
-#            transitions += filter(lambda t: t.probability > 1e-2,
-#                                  get_transitions(z, energylow, energyhigh))
+            transitions = []
+            for z in zs:
+                transitions += get_transitions(z, energylow, energyhigh)
+
+            if not transitions:
+                message = "No transition found for PRZ distribution with high enough probability"
+                warnings.warn(message, ExporterWarning)
+        else:
+            transitions = list(detector.transitions)
 
         transitions.sort(key=attrgetter('probability'), reverse=True)
-
-        if not transitions:
-            message = "No transition found for PRZ distribution with high enough probability"
-            warnings.warn(message, ExporterWarning)
 
         ## Restrain number of transitions to maximum number of PRZ
         if len(transitions) > MAX_SPATIAL_DISTRIBUTION // 2:
@@ -418,8 +421,6 @@ class Exporter(_Exporter):
             zmax_m = max(zmax_m, matinfo.range_m(e0, _PARTICLES_REF[PHOTON]))
 
         ## Create lines
-        key, detector = next(iter(detectors.items()))
-
         text = ' '.join(map(str, [-3, 3, 1]))
         lines.append(self._KEYWORD_GRIDX(text))
 
