@@ -51,6 +51,8 @@ from pymontecarlo.options.detector import \
 from pymontecarlo.options.limit import ShowersLimit, TimeLimit, UncertaintyLimit
 from pymontecarlo.options.beam import GaussianBeam
 
+from pymontecarlo.util.photon_range import photon_range
+
 from pymontecarlo.program._penelope.exporter import \
     Exporter as _Exporter, Keyword, Comment, ExporterException, ExporterWarning
 from pymontecarlo.program.penepma.options.detector import index_delimited_detectors
@@ -410,15 +412,14 @@ class Exporter(_Exporter):
                       ', '.join(map(str, transitions)))
 
         ## Retrieve range
-        matinfos = dict(matinfos)
+        e0 = options.beam.energy_eV
+        safety_factor = 3.0
 
         zmax_m = 1e-08 # PENPEMA forces the minimum depth to be 1e-6 cm
         for material in materials:
-            matfilepath = matinfos[material]
-            matinfo = MaterialInfo(matfilepath)
-
-            e0 = options.beam.energy_eV
-            zmax_m = max(zmax_m, matinfo.range_m(e0, _PARTICLES_REF[PHOTON]))
+            for transition in transitions:
+                tmpzmax_m = photon_range(e0, material, transition) * safety_factor
+                zmax_m = max(zmax_m, tmpzmax_m)
 
         ## Create lines
         text = ' '.join(map(str, [-3, 3, 1]))
